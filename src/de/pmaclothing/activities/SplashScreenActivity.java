@@ -41,24 +41,31 @@ public class SplashScreenActivity extends Activity {
 			@Override
 			protected Void doInBackground(Void... params) {
 				String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS;
-				new File(path).mkdir();
-				for(int resId : FaceDetectorActivity.mBackgroundIds) {
-					Options options = new Options();
-			        options.inSampleSize = 4;
-			        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId, options);
-					
-					try {
-						FileOutputStream fos = new FileOutputStream(path + resId + Constants.SUFFIX_JPEG);
-						bitmap.compress(CompressFormat.JPEG, 100, fos);
-						fos.flush();
-						fos.close();
-					} catch (Exception e) {
-						Log.e(LOG_TAG, e.getMessage() + e);
+				
+				File thumbsDir = new File(path);
+				if(!thumbsDir.isDirectory()) {
+					thumbsDir.mkdir();
+				}
+				
+				File[] files = thumbsDir.listFiles();
+				if(files != null && files.length < FaceDetectorActivity.mBackgroundIds.length) {
+					for(int resId : FaceDetectorActivity.mBackgroundIds) {
+						Options options = new Options();
+				        options.inSampleSize = 4;
+				        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId, options);
+						
+						try {
+							FileOutputStream fos = new FileOutputStream(path + resId + Constants.SUFFIX_JPEG);
+							bitmap.compress(CompressFormat.JPEG, 100, fos);
+							fos.flush();
+							fos.close();
+						} catch (Exception e) {
+							Log.e(LOG_TAG, e.getMessage() + e);
+						}
 					}
 				}
 				return null;
 			}
 		}.execute();
 	}
-	
 }

@@ -23,6 +23,7 @@ import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
@@ -76,7 +77,7 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	private static final int ITEM_OVERFLOW_ORDER = 3;
 
 	
-	public static final int[] mBackgroundIds = { R.drawable.sample_background_1, R.drawable.sample_background_2, R.drawable.sample_background_3};
+	public static final int[] mBackgroundIds = { R.drawable.screen_test_background, R.drawable.sample_background_2, R.drawable.sample_background_3, R.drawable.screen_test_background};
 
 	private ImageZoomView mImageViewFace;
 	private ImageView mImageViewBackground;
@@ -123,7 +124,6 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		mProgressDialog.show();
 		initSeekBar();
 		initImageViews();
-		initFacePositions();
 		initOverflowListView();
 		initAnimations();
 		
@@ -288,12 +288,13 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	}
 
 	private void initImageViews() {
-		mBitmapBackground = BitmapFactory.decodeResource(getResources(), R.drawable.sample_background_1);
+		mBitmapBackground = BitmapFactory.decodeResource(getResources(), mBackgroundIds[0]);
 		
 		mImageViewFace = (ImageZoomView) findViewById(R.id.image_view_face);
 		mImageViewBackground = (ImageView) findViewById(R.id.image_view_background);
 //		mImageViewBackgroundLeft = (ImageView) findViewById(R.id.image_view_background_left);
 //		mImageViewBackgroundRight = (ImageView) findViewById(R.id.image_view_background_right);
+		mImageViewBackground.setImageBitmap(mBitmapBackground);
 	
 		final GestureDetector detector = new GestureDetector(this, new ImageViewGestureListener(this));
 		View.OnTouchListener listener = new View.OnTouchListener() {
@@ -342,25 +343,25 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	}
 
 	private void initFacePositions() {
-		float scaleX = (float) mDisplayMetrics.widthPixels / (float) (mBitmapBackground.getWidth()/2);
-		mFaceSpace = (int) (scaleX * FACE_SPACE);
-		
 		mFacePositions.add(calcFacePosition(0, 0));
 		mFacePositions.add(calcFacePosition(-225, 0));
 		mFacePositions.add(calcFacePosition(270, -10));
+		mFacePositions.add(calcFacePosition(0, 0));
 		
-		mFaceSavingPositions.add(new Point(400, 350));
-		mFaceSavingPositions.add(new Point(400, 450));
-		mFaceSavingPositions.add(new Point(250, 250));
+		mFaceSavingPositions.add(new Point(950, 950));
+		mFaceSavingPositions.add(new Point(365, 510));
+		mFaceSavingPositions.add(new Point(1105, 510));
+		mFaceSavingPositions.add(new Point(950, 950));
 	}
 
 	private Point calcFacePosition(int distFromCenterX, int distFromCenterY) {
-		float scaleFactor = (float) mDisplayMetrics.heightPixels / (float) mBitmapBackground.getHeight();
+		float scaleFactor = (float) mImageViewBackground.getHeight() / (float) mBitmapBackground.getHeight();
+		
 		distFromCenterX = (int) (distFromCenterX * scaleFactor * mDisplayMetrics.density);
 		distFromCenterY = (int) (distFromCenterY * scaleFactor * mDisplayMetrics.density);
 		
-		int resultX = mDisplayMetrics.widthPixels /2 + distFromCenterX - mFaceSpace/2;
-		int resultY = mDisplayMetrics.heightPixels /2 + distFromCenterY - mFaceSpace;
+		int resultX = mDisplayMetrics.widthPixels / 2 + distFromCenterX;
+		int resultY = mImageViewBackground.getHeight() / 2 + distFromCenterY;
 		
 		return new Point(resultX, resultY);
 	}
@@ -424,8 +425,8 @@ public class FaceDetectorActivity extends ActionBarActivity {
 			protected void onPostExecute(Boolean result) {
 				if(result) {
 					mImageViewFace.setImageBitmap(mBitmapFace);
+					initFacePositions();
 					mImageViewFace.setPosition(mFacePositions.get(mCurrentBackgroundPos).x, mFacePositions.get(mCurrentBackgroundPos).y);
-					mImageViewBackground.setImageBitmap(mBitmapBackground);
 					mProgressDialog.dismiss();
 				} else {
 					Toast.makeText(FaceDetectorActivity.this, R.string.no_faces_found, Toast.LENGTH_LONG).show();
@@ -539,11 +540,15 @@ public class FaceDetectorActivity extends ActionBarActivity {
             	int y = (int) (midPoint.y - (eyeDistance * 2.0));
 				int cropWidth = (int) (eyeDistance * 3.5);
 				int cropHeight = (int) (eyeDistance * 4);
-				float scaleFactor = (float) mFaceSpace / cropWidth;
+				
+				float scaleFactor = (float) mImageViewBackground.getHeight() / (float) mBitmapBackground.getHeight();
+				mFaceSpace = (int) (scaleFactor * FACE_SPACE);
+				
+				float faceScaleFactor = (float) mFaceSpace / cropWidth;
 				 
 				Bitmap faceBitmap;
 				Matrix matrix = new Matrix();
-				matrix.postScale(scaleFactor, scaleFactor);
+				matrix.postScale(faceScaleFactor, faceScaleFactor);
 				faceBitmap = Bitmap.createBitmap(cameraBitmap, x > 0 ? x : 0, y > 0 ? y : 0, cropWidth, cropHeight, matrix, false);
             	return faceBitmap;
             } 
@@ -611,15 +616,20 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		Bitmap mergedBitmap = Bitmap.createBitmap(mBitmapBackground.getWidth(), mBitmapBackground.getHeight(), Bitmap.Config.ARGB_8888);
 		Matrix matrix = new Matrix();
 		float[] matrixValues = new float[9];
-	
+		float scaleFactor = (float) FACE_SPACE / (float) mBitmapFace.getWidth() ;
+		
 		mImageViewFace.getImageMatrix().getValues(matrixValues);
-		matrixValues[2] += mFaceSavingPositions.get(mCurrentBackgroundPos).x;
-		matrixValues[5] += mFaceSavingPositions.get(mCurrentBackgroundPos).y;
+		matrixValues[Matrix.MTRANS_X] *= scaleFactor;
+		matrixValues[Matrix.MTRANS_Y] *= scaleFactor;
+		matrixValues[Matrix.MTRANS_X] += (mFaceSavingPositions.get(mCurrentBackgroundPos).x);
+		matrixValues[Matrix.MTRANS_Y] += (mFaceSavingPositions.get(mCurrentBackgroundPos).y);
+		matrixValues[Matrix.MSCALE_X] = scaleFactor;
+		matrixValues[Matrix.MSCALE_Y] = scaleFactor;
 		matrix.setValues(matrixValues);
 		
 		Canvas canvas = new Canvas(mergedBitmap);
-		canvas.drawBitmap(mBitmapFace, matrix, null);
 		canvas.drawBitmap(mBitmapBackground, 0f, 0f, null);
+		canvas.drawBitmap(mBitmapFace, matrix, null);
 		return mergedBitmap;
 	}
 
