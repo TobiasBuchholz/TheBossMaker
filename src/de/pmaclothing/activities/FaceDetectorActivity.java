@@ -689,7 +689,7 @@ public class FaceDetectorActivity extends ActionBarActivity {
                     Log.e(LOG_TAG, "Error at compressing image to share: " + e.getMessage(), e);
                 }
                 if (imagePath != null) {
-                    mImageUri = Uri.parse(Constants.FILE_PATH + imagePath);
+                    mImageUri = Uri.parse(Constants.PREFIX_FILE_PATH + imagePath);
                 }
             }
         });

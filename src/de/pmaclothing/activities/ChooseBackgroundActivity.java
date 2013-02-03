@@ -1,6 +1,5 @@
 package de.pmaclothing.activities;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,6 +16,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import de.pmaclothing.actionbar.ActionBarActivity;
 import de.pmaclothing.facedetect.R;
+import de.pmaclothing.utils.Constants;
 
 public class ChooseBackgroundActivity extends ActionBarActivity {
 	public static final String EXTRA_CHOSEN_BACKGROUND_POS = "de.pmaclothing.facedetector.chosenBackgroundPos";
@@ -58,7 +58,6 @@ public class ChooseBackgroundActivity extends ActionBarActivity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	
 	public class BackgroundImageAdapter extends BaseAdapter {
 	    private LayoutInflater mInflater;
 	    private ViewHolder mHolder;
@@ -91,9 +90,9 @@ public class ChooseBackgroundActivity extends ActionBarActivity {
 	        } else {
 	        	mHolder = (ViewHolder) convertView.getTag();
 	        }
-	        Options options = new Options();
-	        options.inSampleSize = 4;
-	        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), FaceDetectorActivity.mBackgroundIds[position], options);
+	        
+	        String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS + FaceDetectorActivity.mBackgroundIds[position] + Constants.SUFFIX_JPEG;
+			Bitmap bitmap = BitmapFactory.decodeFile(path);
 			mHolder.mImageViewBackground.setImageBitmap(bitmap);
 	        return convertView;
 	    }

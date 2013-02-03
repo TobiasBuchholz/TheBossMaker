@@ -54,7 +54,7 @@ public final class ServerUtilities {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(final Void... params) {
-                final String serverUrl = Constants.SERVER_ADRESS + Constants.POST_BITMAP_PATHTH;
+                final String serverUrl = Constants.SERVER_ADRESS + Constants.POST_BITMAP_PATH;
                 
                 final Map<String, String> requestParams = new HashMap<String, String>();
                 requestParams.put("bitmap", getBitmapAsBase64(bitmap));
