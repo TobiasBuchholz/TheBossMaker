@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dip"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".FaceDetectorActivity" >
+
+	<TextView  
+        android:layout_width="match_parent" 
+        android:layout_height="0dp" 
+        android:text="@string/app_info"
+        android:gravity="center_horizontal"
+        android:layout_weight="1.0" />
+        
+    <Button
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content"
+        android:id="@+id/take_picture"
+        android:layout_margin="5dip"
+        android:text="@string/take_picture"
+        android:layout_gravity="center_horizontal" 
+        android:onClick="onClickTakePictureButton" />
+    
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/choose_picture"
+        android:text="@string/choose_picture"
+        android:layout_gravity="center_horizontal"
+        android:onClick="onClickChoosePictureButton" />
+</LinearLayout>

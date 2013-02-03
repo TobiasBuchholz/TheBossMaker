@@ -1,0 +1,4 @@
+<resources>
+    <color name="actionbar_title_text_color">#FFFFFF</color>
+    <color name="actionbar_button_pressed_color">#32ACFF</color>
+</resources>
