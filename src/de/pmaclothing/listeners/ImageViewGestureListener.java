@@ -21,30 +21,11 @@ public class ImageViewGestureListener extends SimpleOnGestureListener {
     	mActivity = activity;
     }
     
-    @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-    	Log.d("DEBUG", ":: onFling :: ");
-        if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
-            return false;
-        // right to left swipe
-        if(e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-        	if(mActivity instanceof FaceDetectorActivity) {
-        		Toast.makeText(mActivity, "swipe left", Toast.LENGTH_SHORT).show();
-        		((FaceDetectorActivity) mActivity).animateBackground(true);
-        	}
-        } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-        	if(mActivity instanceof FaceDetectorActivity) {
-        		Toast.makeText(mActivity, "swipe right", Toast.LENGTH_SHORT).show();
-        		((FaceDetectorActivity) mActivity).animateBackground(false);
-        	}
-        }
-        return false;
-    }
-
 	@Override
 	public boolean onSingleTapConfirmed(MotionEvent e) {
 		if(mActivity instanceof FaceDetectorActivity) {
-			((FaceDetectorActivity) mActivity).toggleAdjustFaceContainer();
+            // TODO
+//			((FaceDetectorActivity) mActivity).toggleAdjustFaceContainer();
 		}
 		return false;
 	}

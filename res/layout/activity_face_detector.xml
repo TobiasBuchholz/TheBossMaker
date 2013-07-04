@@ -3,95 +3,110 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
-    
-    <ImageView
-        android:id="@+id/image_view_background" 
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:scaleType="centerCrop" />
-    
-    <de.pmaclothing.view.ImageZoomView 
-		android:id="@+id/image_view_face"
-		android:layout_width="wrap_content" 
-		android:layout_height="wrap_content"
-		android:scaleType="matrix"
-		android:adjustViewBounds="true"
-		android:background="#000000"/>
 
-	<RelativeLayout
+    <de.pmaclothing.view.ImageZoomView
+            android:id="@+id/image_view_face"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="matrix"
+            android:adjustViewBounds="true"
+            android:background="#000000"/>
+
+    <ImageView
+            android:id="@+id/image_view_background"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="centerCrop" />
+
+    <RelativeLayout
 	    android:layout_width="fill_parent"
 	    android:layout_height="fill_parent"
 	    android:gravity="bottom"
 	    android:orientation="vertical" >
-	    <Button
-            android:id="@+id/button_toggle_face_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/adjust_face_container_down"
-            android:padding="5dp"
-			android:onClick="onClickButtonToggleFaceContainer" />
-        <RelativeLayout
-            android:id="@+id/adjust_face_container"
+        <de.pmaclothing.view.WrappingSlidingDrawer
+            android:id="@+id/sliding_drawer"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/button_toggle_face_container"
-            android:background="@drawable/actionbar_background" >
-            <SeekBar
-                android:id="@+id/seek_bar"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:paddingLeft="15dp"
-                android:paddingRight="15dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp"
-                android:progressDrawable="@drawable/seekbar_progress"
-                android:secondaryProgress="0"
-                android:thumb="@drawable/seekbar_thumb_normal" />
-            <Button
-                android:id="@+id/button_mode_brigthness"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/seek_bar"
-                android:layout_margin="5dp"
-                android:background="#444444"
-                android:onClick="onClickButtonModeBrightness"
-                android:padding="5dp"
-                android:text="@string/brightness" />
-            <Button
-                android:id="@+id/button_mode_contrast"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/seek_bar"
-                android:layout_margin="5dp"
-                android:layout_toRightOf="@+id/button_mode_brigthness"
-                android:background="#888888"
-                android:onClick="onClickButtonModeContrast"
-                android:padding="5dp"
-                android:text="@string/contrast" />
-            <Button
-                android:id="@+id/button_mode_saturation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/seek_bar"
-                android:layout_margin="5dp"
-                android:layout_toRightOf="@+id/button_mode_contrast"
-                android:background="#888888"
-                android:onClick="onClickButtonModeSaturation"
-                android:padding="5dp"
-                android:text="@string/saturation" />
-            <Button
-                android:id="@+id/button_mode_rotation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/seek_bar"
-                android:layout_margin="5dp"
-                android:layout_toRightOf="@+id/button_mode_saturation"
-                android:background="#888888"
-                android:onClick="onClickButtonModeRotation"
-                android:padding="5dp"
-                android:text="@string/rotation" />
-        </RelativeLayout>
+            android:handle="@+id/adjust_face_container_handle"
+            android:content="@+id/adjust_face_container" >
+            <RelativeLayout
+                    android:id="@+id/adjust_face_container"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:handle="@+id/adjust_face_container_down"
+                    android:content="@+id/reader_activity_menu_layout"
+                    android:background="@drawable/actionbar_background" >
+                <SeekBar
+                        android:id="@+id/seek_bar"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="15dp"
+                        android:paddingRight="15dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginBottom="15dp"
+                        android:progressDrawable="@drawable/seekbar_progress"
+                        android:secondaryProgress="0"
+                        android:thumb="@drawable/seekbar_thumb_normal" />
+                <Button
+                        android:id="@+id/button_mode_brigthness"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/seek_bar"
+                        android:layout_margin="5dp"
+                        android:background="#444444"
+                        android:onClick="onClickButtonModeBrightness"
+                        android:padding="5dp"
+                        android:text="@string/brightness" />
+                <Button
+                        android:id="@+id/button_mode_contrast"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/seek_bar"
+                        android:layout_margin="5dp"
+                        android:layout_toRightOf="@+id/button_mode_brigthness"
+                        android:background="#888888"
+                        android:onClick="onClickButtonModeContrast"
+                        android:padding="5dp"
+                        android:text="@string/contrast" />
+                <Button
+                        android:id="@+id/button_mode_saturation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/seek_bar"
+                        android:layout_margin="5dp"
+                        android:layout_toRightOf="@+id/button_mode_contrast"
+                        android:background="#888888"
+                        android:onClick="onClickButtonModeSaturation"
+                        android:padding="5dp"
+                        android:text="@string/saturation" />
+                <Button
+                        android:id="@+id/button_mode_rotation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/seek_bar"
+                        android:layout_margin="5dp"
+                        android:layout_toRightOf="@+id/button_mode_saturation"
+                        android:background="#888888"
+                        android:onClick="onClickButtonModeRotation"
+                        android:padding="5dp"
+                        android:text="@string/rotation" />
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/adjust_face_container_handle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <ImageButton
+                     android:id="@+id/face_container_grip"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:paddingLeft="10dp"
+                     android:paddingRight="10dp"
+                     android:paddingTop="10dp"
+                     android:background="@drawable/adjust_face_container_up"
+                     android:layout_centerHorizontal="true"
+                     android:onClick="onClickToolbarOpen"/>
+            </RelativeLayout>
+        </de.pmaclothing.view.WrappingSlidingDrawer>
 	</RelativeLayout>
 	
     <LinearLayout 

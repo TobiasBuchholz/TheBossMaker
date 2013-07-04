@@ -132,15 +132,7 @@ public class ImageZoomView extends ImageView {
 		params.setMargins(x, y, 0, 0);
 		setLayoutParams(params);
     }
-    
-    /**
-     * @return The x and y coordinates as Point.
-     */
-    public Point getBitmapPosition() {
-    	Point point = new Point((int) mTranslateX, (int) mTranslateY);
-    	return point;
-    }
-    
+
     /**
      * @param degrees The degrees to rotate.
      */

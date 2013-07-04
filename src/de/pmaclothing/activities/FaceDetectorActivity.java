@@ -28,109 +28,94 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
+import android.view.*;
 import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
-import android.view.animation.TranslateAnimation;
-import android.widget.AdapterView;
+import android.widget.*;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.Toast;
 import de.pmaclothing.actionbar.ActionBarActivity;
 import de.pmaclothing.facedetect.R;
 import de.pmaclothing.listeners.ImageViewGestureListener;
 import de.pmaclothing.utils.Constants;
 import de.pmaclothing.utils.FileHelper;
 import de.pmaclothing.view.ImageZoomView;
+import de.pmaclothing.view.WrappingSlidingDrawer;
 
 public class FaceDetectorActivity extends ActionBarActivity {
-	public static final String INTENT_EXTRA_FROM_CAMERA = "de.pmaclothing.facedetector.fromCamera";
-	
-	private static final String LOG_TAG = FaceDetectorActivity.class.getSimpleName();
-	private static final String MIME_TYPE_IMAGE_JPG = "image/jpeg";
-	
-	private static final int REQUEST_CODE_CHOOSE_BACKGROUND = 100;
-	
-	private static final int MAX_FACES = 1;
-	private static final int FACE_SPACE = 430;
-	
-	private static final int SEEKBAR_MODE_BRIGHTNESS = 0;
-	private static final int SEEKBAR_MODE_CONTRAST = 1;
-	private static final int SEEKBAR_MODE_ROTATION = 2;
-	private static final int SEEKBAR_MODE_SATURATION = 3;
+    public static final String      INTENT_EXTRA_FROM_CAMERA = "de.pmaclothing.facedetector.fromCamera";
 
-	private static final int ITEM_OVERFLOW_CHOOSE_BACKGROUND = 0;
-	private static final int ITEM_OVERFLOW_SAVE = 1;
-	private static final int ITEM_OVERFLOW_SHARE = 2;
-	private static final int ITEM_OVERFLOW_ORDER = 3;
+    private static final String     LOG_TAG = FaceDetectorActivity.class.getSimpleName();
+	private static final String     MIME_TYPE_IMAGE_JPG = "image/jpeg";
+	
+	private static final int        REQUEST_CODE_CHOOSE_BACKGROUND = 100;
+	
+	private static final int        MAX_FACES = 1;
+	private static final int        FACE_SPACE = 220;
+	
+	private static final int        SEEKBAR_MODE_BRIGHTNESS = 0;
+	private static final int        SEEKBAR_MODE_CONTRAST = 1;
+	private static final int        SEEKBAR_MODE_ROTATION = 2;
+	private static final int        SEEKBAR_MODE_SATURATION = 3;
 
-	
-	public static final int[] mBackgroundIds = { R.drawable.screen_test_background, R.drawable.sample_background_2, R.drawable.sample_background_3, R.drawable.screen_test_background};
+	private static final int        ITEM_OVERFLOW_CHOOSE_BACKGROUND = 0;
+	private static final int        ITEM_OVERFLOW_SAVE = 1;
+	private static final int        ITEM_OVERFLOW_SHARE = 2;
+	private static final int        ITEM_OVERFLOW_ORDER = 3;
 
-	private ImageZoomView mImageViewFace;
-	private ImageView mImageViewBackground;
-	private ImageView mImageViewBackgroundLeft;
-	private ImageView mImageViewBackgroundRight;
-	private Bitmap mBitmapFace;
-	private Bitmap mBitmapBackground;
-	private Button mLastSeekBarButton;
-	private ProgressDialog mProgressDialog;
-	private SeekBar mSeekBar;
-	
-	private int mSeekBarMode = SEEKBAR_MODE_BRIGHTNESS;
-	private int mCurrentBackgroundPos = 0;
-	private int mFaceSpace;
-	private int[] mSeekBarProgressStates = new int[] {50, 0, 50, 50};
-	private int[] mOriginalPixels;
-	
-	private boolean mOverflowOpen = false;
-	private boolean mAdjustFaceContainerIn = true;
+	public static final int[]       mBackgroundIds = { R.drawable.sample_background_4, R.drawable.sample_background_2, R.drawable.sample_background_3, R.drawable.screen_test_background, R.drawable.sample_background_4 };
 
-	private ArrayList<Point> mFacePositions = new ArrayList<Point>();
-	private ArrayList<Point> mFaceSavingPositions = new ArrayList<Point>();
+	private View                    mFaceContainerGrip;
+    private ImageZoomView           mImageViewFace;
+	private ImageView               mImageViewBackground;
+	private Bitmap                  mBitmapFace;
+	private Bitmap                  mBitmapBackground;
+	private Button                  mLastSeekBarButton;
+	private ProgressDialog          mProgressDialog;
+	private SeekBar                 mSeekBar;
+    private WrappingSlidingDrawer   mSlidingDrawer;
 	
-	private Thread mBitmapCompressThread;
+	private int                     mSeekBarMode = SEEKBAR_MODE_BRIGHTNESS;
+	private int                     mCurrentBackgroundPos = 0;
+	private int                     mFaceSpace;
+	private int[]                   mSeekBarProgressStates = new int[] {50, 0, 50, 50};
+	private int[]                   mOriginalPixels;
 	
-	private Uri mImageUri;
-	
-	private Animation mAnimationOverflowIn;
-	private Animation mAnimationOverflowOut;
-	private Animation mAnimationSlideIn;
-	private Animation mAnimationSlideOut;
+	private boolean                 mOverflowOpen = false;
 
-	private DisplayMetrics mDisplayMetrics;
+	private ArrayList<Point>        mFacePositions = new ArrayList<Point>();
+	private ArrayList<Point>        mFaceSavingPositions = new ArrayList<Point>();
+	
+	private Thread                  mBitmapCompressThread;
+	
+	private Uri                     mImageUri;
+	
+	private Animation               mAnimationOverflowIn;
+	private Animation               mAnimationOverflowOut;
 
-	@Override
+    private DisplayMetrics          mDisplayMetrics;
+
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_face_detector);
 		setActionBarHomeIcon(R.drawable.ic_home_back);
 		mLastSeekBarButton = (Button) findViewById(R.id.button_mode_brigthness);
-		
-		initDisplayDimensions(); 
+
+        useHardwareAcceleration();
+        initSlidingDrawer();
+        initDisplayDimensions();
 		initProgressDialog();
 		mProgressDialog.show();
 		initSeekBar();
 		initImageViews();
 		initOverflowListView();
 		initAnimations();
-		
+
 		startImageProcessing();
 	}
 
-	@Override
+    @Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		
@@ -199,64 +184,12 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		toggleButtons((Button) view);
 	}
 	
-	public void onClickButtonToggleFaceContainer(final View view) {
-		toggleAdjustFaceContainer();
-	}
+    private void useHardwareAcceleration() {
+        if (Build.VERSION.SDK_INT > 10) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+        }
+    }
 	
-	public void animateBackground(final boolean swipeLeft) {
-		if(swipeLeft) {
-			mImageViewBackgroundRight.startAnimation(AnimationUtils.loadAnimation(this, R.anim.background_image_right_in));
-//			mImageViewBackground.startAnimation(AnimationUtils.loadAnimation(this, R.anim.background_image_left_out));
-		} else {
-			mImageViewBackgroundLeft.startAnimation(AnimationUtils.loadAnimation(this, R.anim.background_image_left_in));
-//			mImageViewBackground.startAnimation(AnimationUtils.loadAnimation(this, R.anim.background_image_right_out));
-		}
-	}
-	
-	public void toggleAdjustFaceContainer() {
-		final View container = findViewById(R.id.adjust_face_container);
-		final View button = findViewById(R.id.button_toggle_face_container);
-		
-		mAnimationSlideIn.setAnimationListener(new AnimationListener() {
-			@Override
-			public void onAnimationStart(Animation animation) {
-			}
-			@Override
-			public void onAnimationRepeat(Animation animation) {
-			}
-			@Override
-			public void onAnimationEnd(Animation animation) {
-				container.setVisibility(View.VISIBLE);
-				button.setBackgroundResource(R.drawable.adjust_face_container_down);
-			}
-		});
-		
-		mAnimationSlideOut.setAnimationListener(new AnimationListener() {
-			@Override
-			public void onAnimationStart(Animation animation) {
-			}
-			@Override
-			public void onAnimationRepeat(Animation animation) {
-			}
-			@Override
-			public void onAnimationEnd(Animation animation) {
-				container.setVisibility(View.GONE);
-				button.setBackgroundResource(R.drawable.adjust_face_container_up);
-			}
-		});
-		
-		if(mAdjustFaceContainerIn) {
-			container.startAnimation(mAnimationSlideOut);
-			button.startAnimation(mAnimationSlideOut);
-			mAdjustFaceContainerIn = false;
-		} else {
-			container.startAnimation(mAnimationSlideIn);
-			button.startAnimation(mAnimationSlideIn);
-			mAdjustFaceContainerIn = true;
-			container.setVisibility(View.VISIBLE);
-		}
-	}
-
 	private void toggleButtons(final Button button) {
 		button.setBackgroundColor(Color.DKGRAY);
 		mLastSeekBarButton.setBackgroundColor(Color.GRAY);
@@ -276,12 +209,21 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		}
 	}
 
-	private void initDisplayDimensions() {
-		 mDisplayMetrics = new DisplayMetrics();
-		 getWindowManager().getDefaultDisplay().getMetrics(mDisplayMetrics);
-	}
+    private void toggleAdjustFaceContainer() {
+        if(mSlidingDrawer.isOpened()) {
+            mSlidingDrawer.animateClose();
+        } else {
+            mSlidingDrawer.animateOpen();
+        }
+    }
 
-	private void initProgressDialog() {
+    private void initDisplayDimensions() {
+        mDisplayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(mDisplayMetrics);
+    }
+
+
+    private void initProgressDialog() {
 		mProgressDialog = new ProgressDialog(FaceDetectorActivity.this);
 	    mProgressDialog.setCancelable(false);
 	    mProgressDialog.setMessage(getString(R.string.please_wait));
@@ -292,8 +234,6 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		
 		mImageViewFace = (ImageZoomView) findViewById(R.id.image_view_face);
 		mImageViewBackground = (ImageView) findViewById(R.id.image_view_background);
-//		mImageViewBackgroundLeft = (ImageView) findViewById(R.id.image_view_background_left);
-//		mImageViewBackgroundRight = (ImageView) findViewById(R.id.image_view_background_right);
 		mImageViewBackground.setImageBitmap(mBitmapBackground);
 	
 		final GestureDetector detector = new GestureDetector(this, new ImageViewGestureListener(this));
@@ -306,13 +246,26 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		mImageViewBackground.setOnTouchListener(listener);
 	}
 
+    private void initSlidingDrawer() {
+        mFaceContainerGrip = findViewById(R.id.face_container_grip);
+        mSlidingDrawer = (WrappingSlidingDrawer) findViewById(R.id.sliding_drawer);
+        mSlidingDrawer.setOnDrawerCloseListener(new SlidingDrawer.OnDrawerCloseListener() {
+            @Override
+            public void onDrawerClosed() {
+                mFaceContainerGrip.setBackgroundResource(R.drawable.adjust_face_container_up);
+            }
+        });
+        mSlidingDrawer.setOnDrawerOpenListener(new SlidingDrawer.OnDrawerOpenListener() {
+            @Override
+            public void onDrawerOpened() {
+                mFaceContainerGrip.setBackgroundResource(R.drawable.adjust_face_container_down);
+            }
+        });
+    }
+
 	private void initAnimations() {
 		mAnimationOverflowIn = AnimationUtils.loadAnimation(this, R.anim.scale_to_1);
 		mAnimationOverflowOut = AnimationUtils.loadAnimation(this, R.anim.scale_to_0);
-		mAnimationSlideIn = new TranslateAnimation(0, 0, 145, 0);
-		mAnimationSlideOut = new TranslateAnimation(0, 0, 0, 145);
-		mAnimationSlideIn.setDuration(200);
-		mAnimationSlideOut.setDuration(200);
 	}
 
 	private void initSeekBar() {
@@ -323,16 +276,16 @@ public class FaceDetectorActivity extends ActionBarActivity {
 			int tempProgress = 50;
 	    	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 	    		if(mSeekBarMode == SEEKBAR_MODE_ROTATION) {
-	    			int degrees = tempProgress - progress;
+                    final int degrees = tempProgress - progress;
 	    			mImageViewFace.rotate(degrees, mBitmapFace.getWidth()/2, mBitmapFace.getHeight()/2);
 	    			tempProgress = progress;
 	    			mSeekBarProgressStates[mSeekBarMode] = progress;
 	    		} else {
 	    			mSeekBarProgressStates[mSeekBarMode] = progress;
 	    			
-	    			int brightness = (int) (mSeekBarProgressStates[SEEKBAR_MODE_BRIGHTNESS] * 2.55) - 127;
-					float contrast = mSeekBarProgressStates[SEEKBAR_MODE_CONTRAST] / 10f; 
-					float saturation = mSeekBarProgressStates[SEEKBAR_MODE_SATURATION] / 50f;
+	    			final int brightness = (int) (mSeekBarProgressStates[SEEKBAR_MODE_BRIGHTNESS] * 2.55) - 127;
+                    final float contrast = mSeekBarProgressStates[SEEKBAR_MODE_CONTRAST] / 10f;
+                    final float saturation = mSeekBarProgressStates[SEEKBAR_MODE_SATURATION] / 50f;
 					adjustPixelValues(brightness, contrast, saturation);
 	    		}
 	    	}
@@ -343,9 +296,9 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	}
 
 	private void initFacePositions() {
-		mFacePositions.add(calcFacePosition(0, 0));
-		mFacePositions.add(calcFacePosition(-225, 0));
-		mFacePositions.add(calcFacePosition(270, -10));
+		mFacePositions.add(calcFacePosition(-110, -120));
+		mFacePositions.add(calcFacePosition(-220, -190));
+		mFacePositions.add(calcFacePosition(90, -150));
 		mFacePositions.add(calcFacePosition(0, 0));
 		
 		mFaceSavingPositions.add(new Point(950, 950));
@@ -367,13 +320,13 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	}
 
 	private void initOverflowListView() {
-		ListView listView = (ListView) findViewById(R.id.listview_overflow);
-		String[] values = new String[] { getString(R.string.choose_background), 
+		final ListView listView = (ListView) findViewById(R.id.listview_overflow);
+		final String[] values = new String[] { getString(R.string.choose_background),
 										 getString(R.string.save), 
 										 getString(R.string.share),
 										 getString(R.string.order) };
 	
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.list_item_overflow, R.id.list_item_textview, values);
+		final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.list_item_overflow, R.id.list_item_textview, values);
 		listView.setAdapter(adapter);
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -533,16 +486,23 @@ public class FaceDetectorActivity extends ActionBarActivity {
             if(facesFound > 0) {
             	PointF midPoint = new PointF();
             	faces[0].getMidPoint(midPoint);
-            	int eyeDistance = (int) faces[0].eyesDistance();
+            	final int eyeDistance = (int) faces[0].eyesDistance();
+                final int cameraBitmapWidth = cameraBitmap.getWidth();
+                final int cameraBitmapHeight = cameraBitmap.getHeight();
             	
             	// crop to face
             	int x = (int) (midPoint.x - (eyeDistance * 1.5));
             	int y = (int) (midPoint.y - (eyeDistance * 2.0));
+                if(x < 0) x = 0;
+                if(y < 0) y = 0;
+
 				int cropWidth = (int) (eyeDistance * 3.5);
-				int cropHeight = (int) (eyeDistance * 4);
-				
-				float scaleFactor = (float) mImageViewBackground.getHeight() / (float) mBitmapBackground.getHeight();
-				mFaceSpace = (int) (scaleFactor * FACE_SPACE);
+				int cropHeight = eyeDistance * 4;
+                if(cropWidth + x > cameraBitmapWidth)   cropWidth = cameraBitmapWidth - x;
+                if(cropHeight + y > cameraBitmapHeight) cropHeight = cameraBitmapHeight - y;
+
+                float scaleFactor = (float) mImageViewBackground.getHeight() / (float) mBitmapBackground.getHeight();
+				mFaceSpace = (int) (scaleFactor * FACE_SPACE * mDisplayMetrics.density);
 				
 				float faceScaleFactor = (float) mFaceSpace / cropWidth;
 				 
@@ -556,18 +516,18 @@ public class FaceDetectorActivity extends ActionBarActivity {
         return null;
     }
 
-	private void adjustPixelValues(int brightness, float contrast, float saturation) {
+    private void adjustPixelValues(int brightness, float contrast, float saturation) {
 		int width = mBitmapFace.getWidth();
 		int height = mBitmapFace.getHeight();
 
 		int[] pixels = new int[width * height];
-		for(int pos=0; pos<pixels.length; pos++) {
-			int argb = mOriginalPixels[pos];
-			
+		for(int pos = 0; pos < pixels.length; pos++) {
+            int argb = mOriginalPixels[pos];
+
 			int r = (argb >> 16) & 0xff;
 			int g = (argb >>  8) & 0xff;
 			int b =  argb        & 0xff;
-			
+
 			// transformation to Y-Cb-Cr
 			int ylum = (int) (0.299 * r + 0.587 * g + 0.114 * b);
 			int cb   = (int) (-0.168736 * r - 0.331264 * g + 0.5 * b);
@@ -575,28 +535,28 @@ public class FaceDetectorActivity extends ActionBarActivity {
 
 			// adjust brightness
 			ylum += brightness;
-			
+
 			// adjust contrast
 			if (contrast > 1) {
 				ylum = (int) ((contrast) * (ylum - 127) + 127);
 			}
-			
+
 			// adjust saturation
 			cb = (int) (cb * saturation );
 			cr = (int) (cr * saturation );
-			
+
 			// transformation back to RGB
 			r = (int) (ylum + 1.402 * cr);
 			g = (int) (ylum - 0.3441*cb - 0.7141*cr);
 			b = (int) (ylum + 1.772*cb);
-			
+
 			if(r > 255) 	r = 255;
 			if(g > 255) 	g = 255;
 			if(b > 255)		b = 255;
 			if(r < 0)		r = 0;
 			if(g < 0)		g = 0;
 			if(b < 0)		b = 0;
-			
+
 			argb = (0xFF<<24) | (r<<16) | (g<<8) | b;
 			pixels[pos] = argb;
 		}
@@ -616,7 +576,7 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		Bitmap mergedBitmap = Bitmap.createBitmap(mBitmapBackground.getWidth(), mBitmapBackground.getHeight(), Bitmap.Config.ARGB_8888);
 		Matrix matrix = new Matrix();
 		float[] matrixValues = new float[9];
-		float scaleFactor = (float) FACE_SPACE / (float) mBitmapFace.getWidth() ;
+		float scaleFactor = FACE_SPACE * mDisplayMetrics.density / (float) mBitmapFace.getWidth();
 		
 		mImageViewFace.getImageMatrix().getValues(matrixValues);
 		matrixValues[Matrix.MTRANS_X] *= scaleFactor;
