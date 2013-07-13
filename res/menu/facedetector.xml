@@ -3,5 +3,6 @@
         android:title="@string/menu_overflow"
         android:icon="@drawable/ic_menu_overflow"
         android:orderInCategory="0"
+        android:state_enabled="false"
         android:showAsAction="always" />
 </menu>

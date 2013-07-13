@@ -7,17 +7,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
+import android.graphics.*;
 import android.graphics.Bitmap.CompressFormat;
-import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Point;
-import android.graphics.PointF;
 import android.media.ExifInterface;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
@@ -25,7 +20,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
@@ -34,7 +31,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.*;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import de.pmaclothing.actionbar.ActionBarActivity;
+import de.pmaclothing.actionbar.CustomActionBarActivity;
 import de.pmaclothing.facedetect.R;
 import de.pmaclothing.listeners.ImageViewGestureListener;
 import de.pmaclothing.utils.Constants;
@@ -42,7 +39,7 @@ import de.pmaclothing.utils.FileHelper;
 import de.pmaclothing.view.ImageZoomView;
 import de.pmaclothing.view.WrappingSlidingDrawer;
 
-public class FaceDetectorActivity extends ActionBarActivity {
+public class FaceDetectorActivity extends CustomActionBarActivity {
     public static final String      INTENT_EXTRA_FROM_CAMERA = "de.pmaclothing.facedetector.fromCamera";
 
     private static final String     LOG_TAG = FaceDetectorActivity.class.getSimpleName();
@@ -99,8 +96,8 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_face_detector);
-		setActionBarHomeIcon(R.drawable.ic_home_back);
 		mLastSeekBarButton = (Button) findViewById(R.id.button_mode_brigthness);
+        mLastSeekBarButton.setSelected(true);
 
         useHardwareAcceleration();
         initSlidingDrawer();
@@ -130,10 +127,9 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-	    MenuInflater menuInflater = getMenuInflater();
+	    final MenuInflater menuInflater = getMenuInflater();
 	    menuInflater.inflate(R.menu.facedetector, menu);
-	    
-	    return super.onCreateOptionsMenu(menu);
+        return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
@@ -150,16 +146,6 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	    return super.onOptionsItemSelected(item);
 	}
 
-	@Override
-	public boolean onKeyDown(int keycode, KeyEvent e) {
-	    switch(keycode) {
-	        case KeyEvent.KEYCODE_MENU:
-	            toggleAdjustFaceContainer();
-	            return true;
-	    }
-	    return super.onKeyDown(keycode, e);
-	}
-	
 	public void onClickButtonModeBrightness(final View view) {
 		mSeekBarMode = SEEKBAR_MODE_BRIGHTNESS;
 		mSeekBar.setProgress(mSeekBarProgressStates[SEEKBAR_MODE_BRIGHTNESS]);
@@ -191,8 +177,8 @@ public class FaceDetectorActivity extends ActionBarActivity {
     }
 	
 	private void toggleButtons(final Button button) {
-		button.setBackgroundColor(Color.DKGRAY);
-		mLastSeekBarButton.setBackgroundColor(Color.GRAY);
+        button.setSelected(true);
+        mLastSeekBarButton.setSelected(false);
 		mLastSeekBarButton = button;
 	}
 	
@@ -209,14 +195,6 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		}
 	}
 
-    private void toggleAdjustFaceContainer() {
-        if(mSlidingDrawer.isOpened()) {
-            mSlidingDrawer.animateClose();
-        } else {
-            mSlidingDrawer.animateOpen();
-        }
-    }
-
     private void initDisplayDimensions() {
         mDisplayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(mDisplayMetrics);
@@ -225,7 +203,7 @@ public class FaceDetectorActivity extends ActionBarActivity {
 
     private void initProgressDialog() {
 		mProgressDialog = new ProgressDialog(FaceDetectorActivity.this);
-	    mProgressDialog.setCancelable(false);
+	    mProgressDialog.setCancelable(true);
 	    mProgressDialog.setMessage(getString(R.string.please_wait));
 	}
 
@@ -235,12 +213,12 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		mImageViewFace = (ImageZoomView) findViewById(R.id.image_view_face);
 		mImageViewBackground = (ImageView) findViewById(R.id.image_view_background);
 		mImageViewBackground.setImageBitmap(mBitmapBackground);
-	
-		final GestureDetector detector = new GestureDetector(this, new ImageViewGestureListener(this));
-		View.OnTouchListener listener = new View.OnTouchListener() {
+
+        final GestureDetector detector = new GestureDetector(this, new ImageViewGestureListener(this));
+        final View.OnTouchListener listener = new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				return detector.onTouchEvent(event);
+                return detector.onTouchEvent(event);
 			}
 		};
 		mImageViewBackground.setOnTouchListener(listener);
@@ -252,13 +230,13 @@ public class FaceDetectorActivity extends ActionBarActivity {
         mSlidingDrawer.setOnDrawerCloseListener(new SlidingDrawer.OnDrawerCloseListener() {
             @Override
             public void onDrawerClosed() {
-                mFaceContainerGrip.setBackgroundResource(R.drawable.adjust_face_container_up);
+                mFaceContainerGrip.setBackgroundResource(R.drawable.button_face_container_up);
             }
         });
         mSlidingDrawer.setOnDrawerOpenListener(new SlidingDrawer.OnDrawerOpenListener() {
             @Override
             public void onDrawerOpened() {
-                mFaceContainerGrip.setBackgroundResource(R.drawable.adjust_face_container_down);
+                mFaceContainerGrip.setBackgroundResource(R.drawable.button_face_container_down);
             }
         });
     }
@@ -323,8 +301,8 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		final ListView listView = (ListView) findViewById(R.id.listview_overflow);
 		final String[] values = new String[] { getString(R.string.choose_background),
 										 getString(R.string.save), 
-										 getString(R.string.share),
-										 getString(R.string.order) };
+										 getString(R.string.share)/*,
+										 getString(R.string.order)*/ };
 	
 		final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.list_item_overflow, R.id.list_item_textview, values);
 		listView.setAdapter(adapter);
