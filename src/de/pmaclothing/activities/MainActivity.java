@@ -11,13 +11,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
-import de.pmaclothing.actionbar.ActionBarActivity;
+import de.pmaclothing.actionbar.CustomActionBarActivity;
 import de.pmaclothing.facedetect.R;
 import de.pmaclothing.utils.Constants;
 import de.pmaclothing.utils.FileHelper;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends CustomActionBarActivity {
     private static final int TAKE_PICTURE_CODE = 100;
     private static final int CHOOSE_PICTURE_CODE = 101;
         

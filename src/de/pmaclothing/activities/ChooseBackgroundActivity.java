@@ -15,10 +15,11 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import de.pmaclothing.actionbar.ActionBarActivity;
+import de.pmaclothing.actionbar.CustomActionBarActivity;
 import de.pmaclothing.facedetect.R;
 import de.pmaclothing.utils.Constants;
 
-public class ChooseBackgroundActivity extends ActionBarActivity {
+public class ChooseBackgroundActivity extends CustomActionBarActivity {
 	public static final String EXTRA_CHOSEN_BACKGROUND_POS = "de.pmaclothing.facedetector.chosenBackgroundPos";
 	
 	private GridView mGridView;
@@ -28,7 +29,7 @@ public class ChooseBackgroundActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_choose_background);
-		setActionBarHomeIcon(R.drawable.ic_home_back);
+//		setActionBarHomeIcon(R.drawable.ic_home_back);
 		
 		mImageAdapter = new BackgroundImageAdapter();
 		mGridView = (GridView) findViewById(R.id.gridview_choose_background);

@@ -43,53 +43,51 @@
                         android:paddingLeft="15dp"
                         android:paddingRight="15dp"
                         android:layout_marginTop="15dp"
-                        android:layout_marginBottom="15dp"
                         android:progressDrawable="@drawable/seekbar_progress"
                         android:secondaryProgress="0"
                         android:thumb="@drawable/seekbar_thumb_normal" />
-                <Button
-                        android:id="@+id/button_mode_brigthness"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/seek_bar"
-                        android:layout_margin="5dp"
-                        android:background="#444444"
-                        android:onClick="onClickButtonModeBrightness"
-                        android:padding="5dp"
-                        android:text="@string/brightness" />
-                <Button
-                        android:id="@+id/button_mode_contrast"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/seek_bar"
-                        android:layout_margin="5dp"
-                        android:layout_toRightOf="@+id/button_mode_brigthness"
-                        android:background="#888888"
-                        android:onClick="onClickButtonModeContrast"
-                        android:padding="5dp"
-                        android:text="@string/contrast" />
-                <Button
-                        android:id="@+id/button_mode_saturation"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/seek_bar"
-                        android:layout_margin="5dp"
-                        android:layout_toRightOf="@+id/button_mode_contrast"
-                        android:background="#888888"
-                        android:onClick="onClickButtonModeSaturation"
-                        android:padding="5dp"
-                        android:text="@string/saturation" />
-                <Button
-                        android:id="@+id/button_mode_rotation"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/seek_bar"
-                        android:layout_margin="5dp"
-                        android:layout_toRightOf="@+id/button_mode_saturation"
-                        android:background="#888888"
-                        android:onClick="onClickButtonModeRotation"
-                        android:padding="5dp"
-                        android:text="@string/rotation" />
+                <LinearLayout
+                    android:id="@+id/adjust_face_buttons"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="30dp"
+                    android:layout_below="@+id/seek_bar" >
+                    <Button
+                            android:id="@+id/button_mode_brigthness"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/button_brightness_selector"
+                            android:onClick="onClickButtonModeBrightness"
+                            android:padding="5dp" />
+                    <Button
+                            android:id="@+id/button_mode_contrast"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/seek_bar"
+                            android:layout_toRightOf="@+id/button_mode_brigthness"
+                            android:background="@drawable/button_contrast_selector"
+                            android:onClick="onClickButtonModeContrast"
+                            android:padding="5dp" />
+                    <Button
+                            android:id="@+id/button_mode_saturation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/seek_bar"
+                            android:layout_toRightOf="@+id/button_mode_contrast"
+                            android:background="@drawable/button_saturation_selector"
+                            android:onClick="onClickButtonModeSaturation"
+                            android:padding="5dp" />
+                    <Button
+                            android:id="@+id/button_mode_rotation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/seek_bar"
+                            android:layout_toRightOf="@+id/button_mode_saturation"
+                            android:background="@drawable/button_rotation_selector"
+                            android:onClick="onClickButtonModeRotation"
+                            android:padding="5dp" />
+
+                </LinearLayout>
             </RelativeLayout>
             <RelativeLayout
                 android:id="@+id/adjust_face_container_handle"
@@ -102,7 +100,7 @@
                      android:paddingLeft="10dp"
                      android:paddingRight="10dp"
                      android:paddingTop="10dp"
-                     android:background="@drawable/adjust_face_container_up"
+                     android:background="@drawable/button_face_container_up_selector"
                      android:layout_centerHorizontal="true"
                      android:onClick="onClickToolbarOpen"/>
             </RelativeLayout>

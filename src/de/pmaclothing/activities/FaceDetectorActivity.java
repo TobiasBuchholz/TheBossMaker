@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
@@ -35,6 +36,7 @@ import android.widget.*;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import de.pmaclothing.actionbar.ActionBarActivity;
+import de.pmaclothing.actionbar.CustomActionBarActivity;
 import de.pmaclothing.facedetect.R;
 import de.pmaclothing.listeners.ImageViewGestureListener;
 import de.pmaclothing.utils.Constants;
@@ -42,7 +44,7 @@ import de.pmaclothing.utils.FileHelper;
 import de.pmaclothing.view.ImageZoomView;
 import de.pmaclothing.view.WrappingSlidingDrawer;
 
-public class FaceDetectorActivity extends ActionBarActivity {
+public class FaceDetectorActivity extends CustomActionBarActivity {
     public static final String      INTENT_EXTRA_FROM_CAMERA = "de.pmaclothing.facedetector.fromCamera";
 
     private static final String     LOG_TAG = FaceDetectorActivity.class.getSimpleName();
@@ -99,8 +101,8 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_face_detector);
-		setActionBarHomeIcon(R.drawable.ic_home_back);
 		mLastSeekBarButton = (Button) findViewById(R.id.button_mode_brigthness);
+        mLastSeekBarButton.setSelected(true);
 
         useHardwareAcceleration();
         initSlidingDrawer();
@@ -150,16 +152,6 @@ public class FaceDetectorActivity extends ActionBarActivity {
 	    return super.onOptionsItemSelected(item);
 	}
 
-	@Override
-	public boolean onKeyDown(int keycode, KeyEvent e) {
-	    switch(keycode) {
-	        case KeyEvent.KEYCODE_MENU:
-	            toggleAdjustFaceContainer();
-	            return true;
-	    }
-	    return super.onKeyDown(keycode, e);
-	}
-	
 	public void onClickButtonModeBrightness(final View view) {
 		mSeekBarMode = SEEKBAR_MODE_BRIGHTNESS;
 		mSeekBar.setProgress(mSeekBarProgressStates[SEEKBAR_MODE_BRIGHTNESS]);
@@ -191,8 +183,8 @@ public class FaceDetectorActivity extends ActionBarActivity {
     }
 	
 	private void toggleButtons(final Button button) {
-		button.setBackgroundColor(Color.DKGRAY);
-		mLastSeekBarButton.setBackgroundColor(Color.GRAY);
+        button.setSelected(true);
+        mLastSeekBarButton.setSelected(false);
 		mLastSeekBarButton = button;
 	}
 	
@@ -208,14 +200,6 @@ public class FaceDetectorActivity extends ActionBarActivity {
 			mOverflowOpen = true;
 		}
 	}
-
-    private void toggleAdjustFaceContainer() {
-        if(mSlidingDrawer.isOpened()) {
-            mSlidingDrawer.animateClose();
-        } else {
-            mSlidingDrawer.animateOpen();
-        }
-    }
 
     private void initDisplayDimensions() {
         mDisplayMetrics = new DisplayMetrics();
@@ -235,12 +219,12 @@ public class FaceDetectorActivity extends ActionBarActivity {
 		mImageViewFace = (ImageZoomView) findViewById(R.id.image_view_face);
 		mImageViewBackground = (ImageView) findViewById(R.id.image_view_background);
 		mImageViewBackground.setImageBitmap(mBitmapBackground);
-	
-		final GestureDetector detector = new GestureDetector(this, new ImageViewGestureListener(this));
-		View.OnTouchListener listener = new View.OnTouchListener() {
+
+        final GestureDetector detector = new GestureDetector(this, new ImageViewGestureListener(this));
+        final View.OnTouchListener listener = new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				return detector.onTouchEvent(event);
+                return detector.onTouchEvent(event);
 			}
 		};
 		mImageViewBackground.setOnTouchListener(listener);
@@ -252,13 +236,13 @@ public class FaceDetectorActivity extends ActionBarActivity {
         mSlidingDrawer.setOnDrawerCloseListener(new SlidingDrawer.OnDrawerCloseListener() {
             @Override
             public void onDrawerClosed() {
-                mFaceContainerGrip.setBackgroundResource(R.drawable.adjust_face_container_up);
+                mFaceContainerGrip.setBackgroundResource(R.drawable.button_face_container_up_selector);
             }
         });
         mSlidingDrawer.setOnDrawerOpenListener(new SlidingDrawer.OnDrawerOpenListener() {
             @Override
             public void onDrawerOpened() {
-                mFaceContainerGrip.setBackgroundResource(R.drawable.adjust_face_container_down);
+                mFaceContainerGrip.setBackgroundResource(R.drawable.button_face_container_down_selector);
             }
         });
     }

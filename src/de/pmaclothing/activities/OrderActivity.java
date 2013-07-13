@@ -3,8 +3,9 @@ package de.pmaclothing.activities;
 import android.os.Bundle;
 import android.view.MenuItem;
 import de.pmaclothing.actionbar.ActionBarActivity;
+import de.pmaclothing.actionbar.CustomActionBarActivity;
 
-public class OrderActivity extends ActionBarActivity {
+public class OrderActivity extends CustomActionBarActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
