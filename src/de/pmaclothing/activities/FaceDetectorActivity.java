@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -18,17 +19,17 @@ import de.pmaclothing.utils.FileHelper;
 import de.pmaclothing.view.BossFragmentPagerAdapter;
 import de.pmaclothing.view.WrappingSlidingDrawer;
 
-public class FaceDetectorActivity extends CustomActionBarActivity {
+public class FaceDetectorActivity extends CustomActionBarActivity implements ViewPager.OnPageChangeListener {
     public static final String      INTENT_EXTRA_FROM_CAMERA = "de.pmaclothing.facedetector.fromCamera";
 
     private static final String     LOG_TAG = FaceDetectorActivity.class.getSimpleName();
 
 	private static final int        REQUEST_CODE_CHOOSE_BACKGROUND = 100;
 
-	private static final int        SEEKBAR_MODE_BRIGHTNESS = 0;
-	private static final int        SEEKBAR_MODE_CONTRAST = 1;
-	private static final int        SEEKBAR_MODE_ROTATION = 2;
-	private static final int        SEEKBAR_MODE_SATURATION = 3;
+	public static final int        SEEKBAR_MODE_BRIGHTNESS = 0;
+    public static final int        SEEKBAR_MODE_CONTRAST = 1;
+    public static final int        SEEKBAR_MODE_ROTATION = 2;
+    public static final int        SEEKBAR_MODE_SATURATION = 3;
 
 	private static final int        ITEM_OVERFLOW_CHOOSE_BACKGROUND = 0;
 	private static final int        ITEM_OVERFLOW_SAVE = 1;
@@ -70,6 +71,7 @@ public class FaceDetectorActivity extends CustomActionBarActivity {
         mViewPager = (ViewPager) findViewById(R.id.view_pager);
         mFragmentPagerAdapter = new BossFragmentPagerAdapter(getSupportFragmentManager(), this);
         mFragmentPagerAdapter.setGestureDetector(new GestureDetector(this, new ImageViewGestureListener()));
+        mViewPager.setOnPageChangeListener(this);
         mViewPager.setAdapter(mFragmentPagerAdapter);
     }
 
@@ -137,6 +139,14 @@ public class FaceDetectorActivity extends CustomActionBarActivity {
         }
     }
 
+    /**
+     *
+     * @return
+     */
+    public int[] getSeekBarProgressStates() {
+        return mSeekBarProgressStates;
+    }
+
     private void toggleButtons(final Button button, final int mode) {
         mSeekBarMode = mode;
         mSeekBar.setProgress(mSeekBarProgressStates[mode]);
@@ -195,11 +205,7 @@ public class FaceDetectorActivity extends CustomActionBarActivity {
 	    			mSeekBarProgressStates[mSeekBarMode] = progress;
 	    		} else {
 	    			mSeekBarProgressStates[mSeekBarMode] = progress;
-	    			
-	    			final int brightness = (int) (mSeekBarProgressStates[SEEKBAR_MODE_BRIGHTNESS] * 2.55) - 127;
-                    final float contrast = mSeekBarProgressStates[SEEKBAR_MODE_CONTRAST] / 10f;
-                    final float saturation = mSeekBarProgressStates[SEEKBAR_MODE_SATURATION] / 50f;
-					mFragmentPagerAdapter.getCurrentFragment().adjustPixelValues(brightness, contrast, saturation);
+                    adjustPixelValues();
 	    		}
 	    	}
 			
@@ -207,6 +213,13 @@ public class FaceDetectorActivity extends CustomActionBarActivity {
 			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
 	}
+
+    private void adjustPixelValues() {
+        final int brightness = (int) (mSeekBarProgressStates[SEEKBAR_MODE_BRIGHTNESS] * 2.55) - 127;
+        final float contrast = mSeekBarProgressStates[SEEKBAR_MODE_CONTRAST] / 10f;
+        final float saturation = mSeekBarProgressStates[SEEKBAR_MODE_SATURATION] / 50f;
+        mFragmentPagerAdapter.getCurrentFragment().adjustPixelValues(brightness, contrast, saturation);
+    }
 
     private void initOverflowListView() {
 		final ListView listView = (ListView) findViewById(R.id.listview_overflow);
@@ -244,4 +257,18 @@ public class FaceDetectorActivity extends CustomActionBarActivity {
 		startActivityForResult(intent, REQUEST_CODE_CHOOSE_BACKGROUND);
 	}
 
+    @Override
+    public void onPageScrolled(final int position, final float positionOffset, final int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(final int position) {
+
+    }
+
+    @Override
+    public void onPageScrollStateChanged(final int state) {
+
+    }
 }

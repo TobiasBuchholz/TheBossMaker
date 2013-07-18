@@ -52,7 +52,6 @@ public class BossFragment extends Fragment {
     private DisplayMetrics          mDisplayMetrics;
     private ProgressDialog          mProgressDialog;
     private Thread                  mBitmapCompressThread;
-    private SharedPreferences       mPreferences;
 
     private Uri                     mImageUri;
 
@@ -75,7 +74,6 @@ public class BossFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mActivity = getActivity();
-        mPreferences = mActivity.getSharedPreferences(Constants.SHARED_PREFERENCES, Activity.MODE_PRIVATE);
         initDisplayDimensions();
         initProgressDialog();
     }
@@ -90,27 +88,35 @@ public class BossFragment extends Fragment {
     public void onViewCreated(final View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initImageViews(view);
-        initFacePosition();
 
         if(FileHelper.exists(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG) == FileHelper.IS_NOTHING && mBackgroundNumber == 0) {
             startImageProcessing();
         } else if(FileHelper.exists(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG) == FileHelper.IS_FILE) {
             loadFaceBitmapFromDisk();
+            updatePixelValues();
         }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.d("DEBUG", " :: onPause :: ");
     }
 
     @Override
     public void setUserVisibleHint(final boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if(mBitmapFace == null && mImageViewFace != null && FileHelper.exists(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG) == FileHelper.IS_FILE) {
-            loadFaceBitmapFromDisk();
+
+        if(isVisibleToUser) {
+            if(mBitmapFace == null && mImageViewFace != null && FileHelper.exists(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG) == FileHelper.IS_FILE) {
+                loadFaceBitmapFromDisk();
+            }
+            if(mBitmapFace != null) {
+                updatePixelValues();
+            }
         }
+    }
+
+    private void updatePixelValues() {
+        final int[] seekBarProgressStates = ((FaceDetectorActivity) mActivity).getSeekBarProgressStates();
+        final int brightness = (int) (seekBarProgressStates[FaceDetectorActivity.SEEKBAR_MODE_BRIGHTNESS] * 2.55) - 127;
+        final float contrast = seekBarProgressStates[FaceDetectorActivity.SEEKBAR_MODE_CONTRAST] / 10f;
+        final float saturation = seekBarProgressStates[FaceDetectorActivity.SEEKBAR_MODE_SATURATION] / 50f;
+        adjustPixelValues(brightness, contrast, saturation);
     }
 
     private void loadFaceBitmapFromDisk() {
@@ -119,8 +125,8 @@ public class BossFragment extends Fragment {
 
         if(mBitmapFace != null) {
             determineOriginalPixels();
-            mImageViewFace.setPosition(mFacePosition.x, mFacePosition.y);
             mImageViewFace.setImageBitmap(mBitmapFace);
+            mImageViewFace.setPosition(mFacePosition.x, mFacePosition.y);
         }
     }
 
