@@ -16,6 +16,7 @@
 
 package de.pmaclothing.actionbar;
 
+import android.support.v4.app.FragmentActivity;
 import de.pmaclothing.facedetect.R;
 import android.app.Activity;
 import android.os.Bundle;
@@ -31,7 +32,7 @@ import android.view.MenuInflater;
  * NOTE: this may used with the Android Compatibility Package by extending
  * android.support.v4.app.FragmentActivity instead of {@link Activity}.
  */
-public abstract class ActionBarActivity extends Activity {
+public abstract class ActionBarActivity extends FragmentActivity {
     final ActionBarHelper mActionBarHelper = ActionBarHelper.createInstance(this);
 
     /**

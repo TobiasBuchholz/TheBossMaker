@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.util.Log;
 import de.pmaclothing.facedetect.R;
 import de.pmaclothing.utils.Constants;
+import de.pmaclothing.view.BossFragmentPagerAdapter;
 
 public class SplashScreenActivity extends Activity {
 	private final static String LOG_TAG = SplashScreenActivity.class.getSimpleName();
@@ -48,8 +49,8 @@ public class SplashScreenActivity extends Activity {
 				}
 				
 				File[] files = thumbsDir.listFiles();
-				if(files != null && files.length < FaceDetectorActivity.mBackgroundIds.length) {
-					for(int resId : FaceDetectorActivity.mBackgroundIds) {
+				if(files != null && files.length < BossFragmentPagerAdapter.mBackgroundIds.length) {
+					for(int resId : BossFragmentPagerAdapter.mBackgroundIds) {
 						Options options = new Options();
 				        options.inSampleSize = 4;
 				        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId, options);

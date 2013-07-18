@@ -18,6 +18,7 @@ import de.pmaclothing.actionbar.ActionBarActivity;
 import de.pmaclothing.actionbar.CustomActionBarActivity;
 import de.pmaclothing.facedetect.R;
 import de.pmaclothing.utils.Constants;
+import de.pmaclothing.view.BossFragmentPagerAdapter;
 
 public class ChooseBackgroundActivity extends CustomActionBarActivity {
 	public static final String EXTRA_CHOSEN_BACKGROUND_POS = "de.pmaclothing.facedetector.chosenBackgroundPos";
@@ -68,7 +69,7 @@ public class ChooseBackgroundActivity extends CustomActionBarActivity {
 	    }
 
 	    public int getCount() {
-	        return FaceDetectorActivity.mBackgroundIds.length;
+	        return BossFragmentPagerAdapter.mBackgroundIds.length;
 	    }
 
 	    public Object getItem(int position) {
@@ -92,7 +93,7 @@ public class ChooseBackgroundActivity extends CustomActionBarActivity {
 	        	mHolder = (ViewHolder) convertView.getTag();
 	        }
 	        
-	        String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS + FaceDetectorActivity.mBackgroundIds[position] + Constants.SUFFIX_JPEG;
+	        String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS + BossFragmentPagerAdapter.mBackgroundIds[position] + Constants.SUFFIX_JPEG;
 			Bitmap bitmap = BitmapFactory.decodeFile(path);
 			mHolder.mImageViewBackground.setImageBitmap(bitmap);
 	        return convertView;

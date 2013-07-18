@@ -25,11 +25,5 @@
             android:id="@+id/choose_picture"
             android:background="@drawable/button_choose_pic_selector"
             android:onClick="onClickChoosePictureButton" />
-
-        <de.pmaclothing.view.CustomFontButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="hello world"
-                />
     </LinearLayout>
 </RelativeLayout>

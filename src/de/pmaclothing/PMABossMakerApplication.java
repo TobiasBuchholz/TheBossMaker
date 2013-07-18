@@ -1,6 +1,9 @@
 package de.pmaclothing;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.SharedPreferences;
+import de.pmaclothing.utils.Constants;
 
 /**
  * User: tobiasbuchholz @ PressMatrix GmbH
@@ -12,5 +15,4 @@ public class PMABossMakerApplication extends Application {
     public void onCreate() {
         super.onCreate();
     }
-
 }

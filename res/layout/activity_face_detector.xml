@@ -4,19 +4,11 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
-    <de.pmaclothing.view.ImageZoomView
-            android:id="@+id/image_view_face"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleType="matrix"
-            android:adjustViewBounds="true"
-            android:background="#000000"/>
-
-    <ImageView
-            android:id="@+id/image_view_background"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleType="centerCrop" />
+    <android.support.v4.view.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        />
 
     <RelativeLayout
 	    android:layout_width="fill_parent"
