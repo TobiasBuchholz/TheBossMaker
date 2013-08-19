@@ -41,22 +41,22 @@ public class SplashScreenActivity extends Activity {
 
 			@Override
 			protected Void doInBackground(Void... params) {
-				String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS;
+				final String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS;
 				
-				File thumbsDir = new File(path);
+				final File thumbsDir = new File(path);
 				if(!thumbsDir.isDirectory()) {
-					thumbsDir.mkdir();
+					thumbsDir.mkdirs();
 				}
 				
-				File[] files = thumbsDir.listFiles();
+				final File[] files = thumbsDir.listFiles();
 				if(files != null && files.length < BossFragmentPagerAdapter.mBackgroundIds.length) {
 					for(int resId : BossFragmentPagerAdapter.mBackgroundIds) {
 						Options options = new Options();
 				        options.inSampleSize = 4;
-				        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId, options);
+				        final Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId, options);
 						
 						try {
-							FileOutputStream fos = new FileOutputStream(path + resId + Constants.SUFFIX_JPEG);
+							final FileOutputStream fos = new FileOutputStream(path + resId + Constants.SUFFIX_JPEG);
 							bitmap.compress(CompressFormat.JPEG, 100, fos);
 							fos.flush();
 							fos.close();

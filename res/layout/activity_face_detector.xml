@@ -27,13 +27,11 @@
                     android:layout_height="wrap_content"
                     android:handle="@+id/adjust_face_container_down"
                     android:content="@+id/reader_activity_menu_layout"
-                    android:background="@drawable/actionbar_background" >
-                <SeekBar
-                        android:id="@+id/seek_bar"
+                    android:background="@drawable/background_adjust_face_container" >
+                <de.pmaclothing.view.FaceAdjustmentBar
+                        android:id="@+id/face_adjustment_bar"
                         android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingLeft="15dp"
-                        android:paddingRight="15dp"
+                        android:layout_height="50dp"
                         android:layout_marginTop="15dp"
                         android:progressDrawable="@drawable/seekbar_progress"
                         android:secondaryProgress="0"
@@ -43,39 +41,43 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingBottom="30dp"
-                    android:layout_below="@+id/seek_bar" >
-                    <Button
+                    android:layout_below="@+id/face_adjustment_bar" >
+                    <de.pmaclothing.view.CustomFontButton
                             android:id="@+id/button_mode_brigthness"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/button_brightness_selector"
+                            android:background="#00000000"
                             android:onClick="onClickButtonModeBrightness"
+                            android:text="@string/brightness"
                             android:padding="5dp" />
-                    <Button
+                    <de.pmaclothing.view.CustomFontButton
                             android:id="@+id/button_mode_contrast"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@+id/seek_bar"
+                            android:layout_below="@+id/face_adjustment_bar"
                             android:layout_toRightOf="@+id/button_mode_brigthness"
-                            android:background="@drawable/button_contrast_selector"
+                            android:background="#00000000"
+                            android:text="@string/contrast"
                             android:onClick="onClickButtonModeContrast"
                             android:padding="5dp" />
-                    <Button
+                    <de.pmaclothing.view.CustomFontButton
                             android:id="@+id/button_mode_saturation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@+id/seek_bar"
+                            android:layout_below="@+id/face_adjustment_bar"
                             android:layout_toRightOf="@+id/button_mode_contrast"
-                            android:background="@drawable/button_saturation_selector"
+                            android:background="#00000000"
+                            android:text="@string/saturation"
                             android:onClick="onClickButtonModeSaturation"
                             android:padding="5dp" />
-                    <Button
+                    <de.pmaclothing.view.CustomFontButton
                             android:id="@+id/button_mode_rotation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@+id/seek_bar"
+                            android:layout_below="@+id/face_adjustment_bar"
                             android:layout_toRightOf="@+id/button_mode_saturation"
-                            android:background="@drawable/button_rotation_selector"
+                            android:background="#00000000"
+                            android:text="@string/rotation"
                             android:onClick="onClickButtonModeRotation"
                             android:padding="5dp" />
 
@@ -84,15 +86,12 @@
             <RelativeLayout
                 android:id="@+id/adjust_face_container_handle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <ImageButton
+                android:layout_height="wrap_content" >
+                <Button
                      android:id="@+id/face_container_grip"
                      android:layout_width="wrap_content"
                      android:layout_height="wrap_content"
-                     android:paddingLeft="10dp"
-                     android:paddingRight="10dp"
-                     android:paddingTop="10dp"
-                     android:background="@drawable/button_face_container_up_selector"
+                     android:background="@drawable/button_face_container_up"
                      android:layout_centerHorizontal="true"
                      android:onClick="onClickToolbarOpen"/>
             </RelativeLayout>
@@ -109,6 +108,8 @@
         <ListView 
 	        android:id="@+id/listview_overflow"
 	        android:layout_width="100dp"
-	        android:layout_height="wrap_content" />
+	        android:layout_height="wrap_content"
+            android:listSelector="@drawable/list_item_overscroll_selector"
+            android:background="@drawable/background_overscroll_listview"/>
     </LinearLayout>
 </RelativeLayout>

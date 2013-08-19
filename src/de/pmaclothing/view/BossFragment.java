@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.*;
 import android.media.ExifInterface;
@@ -112,11 +111,8 @@ public class BossFragment extends Fragment {
     }
 
     private void updatePixelValues() {
-        final int[] seekBarProgressStates = ((FaceDetectorActivity) mActivity).getSeekBarProgressStates();
-        final int brightness = (int) (seekBarProgressStates[FaceDetectorActivity.SEEKBAR_MODE_BRIGHTNESS] * 2.55) - 127;
-        final float contrast = seekBarProgressStates[FaceDetectorActivity.SEEKBAR_MODE_CONTRAST] / 10f;
-        final float saturation = seekBarProgressStates[FaceDetectorActivity.SEEKBAR_MODE_SATURATION] / 50f;
-        adjustPixelValues(brightness, contrast, saturation);
+        final FaceAdjustmentBar faceAdjustemntBar = ((FaceDetectorActivity) mActivity).getFaceAdjustemntBar();
+        adjustPixelValues(faceAdjustemntBar);
     }
 
     private void loadFaceBitmapFromDisk() {
@@ -126,6 +122,7 @@ public class BossFragment extends Fragment {
         if(mBitmapFace != null) {
             determineOriginalPixels();
             mImageViewFace.setImageBitmap(mBitmapFace);
+            initFacePosition();
             mImageViewFace.setPosition(mFacePosition.x, mFacePosition.y);
         }
     }
@@ -346,7 +343,11 @@ public class BossFragment extends Fragment {
         return new Point(resultX, resultY);
     }
 
-    public void adjustPixelValues(int brightness, float contrast, float saturation) {
+    public void adjustPixelValues(final FaceAdjustmentBar bar) {
+        final int brightness = (int) (bar.getProgressState(FaceAdjustmentBar.MODE_BRIGHTNESS) * 2.55) - 127;
+        final float contrast = bar.getProgressState(FaceAdjustmentBar.MODE_CONTRAST) / 10f;
+        final float saturation = bar.getProgressState(FaceAdjustmentBar.MODE_SATURATION) / 50f;
+
         final int width = mBitmapFace.getWidth();
         final int height = mBitmapFace.getHeight();
 

@@ -3,27 +3,45 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_1"
+    android:background="@drawable/background_activity_main"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".FaceDetectorActivity" >
-
-    <LinearLayout
-        android:layout_width="fill_parent"
+    <ImageView
+        android:id="@+id/bossmaker_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/bossmaker_logo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        />
+    <ImageView
+        android:id="@+id/shit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/shit"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp"
+        />
+    <RelativeLayout
+        android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:orientation="vertical"
-        android:gravity="center">
+        android:layout_below="@id/bossmaker_logo"
+        android:layout_above="@id/shit"
+        android:layout_centerHorizontal="true"
+        android:gravity="center" >
         <Button
+            android:id="@+id/take_picture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/take_picture"
             android:background="@drawable/button_take_pic_selector"
             android:onClick="onClickTakePictureButton" />
-
         <Button
+            android:id="@+id/choose_picture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/choose_picture"
+            android:layout_toRightOf="@id/take_picture"
             android:background="@drawable/button_choose_pic_selector"
             android:onClick="onClickChoosePictureButton" />
-    </LinearLayout>
+    </RelativeLayout>
 </RelativeLayout>

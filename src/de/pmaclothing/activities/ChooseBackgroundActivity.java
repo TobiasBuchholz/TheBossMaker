@@ -30,8 +30,7 @@ public class ChooseBackgroundActivity extends CustomActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_choose_background);
-//		setActionBarHomeIcon(R.drawable.ic_home_back);
-		
+
 		mImageAdapter = new BackgroundImageAdapter();
 		mGridView = (GridView) findViewById(R.id.gridview_choose_background);
 		mGridView.setAdapter(mImageAdapter);
@@ -81,25 +80,30 @@ public class ChooseBackgroundActivity extends CustomActionBarActivity {
 	    }
 
 	    public View getView(int position, View convertView, ViewGroup parent) {
-	        if (convertView == null) { 
-	        	mHolder = new ViewHolder();
-	        	convertView = mInflater.inflate(R.layout.grid_item_choose_background, null);
-	        	
-	        	mHolder.mImageViewBackground = (ImageView) convertView.findViewById(R.id.grid_item_background_image);
-	        	
-	        	convertView.measure(View.MeasureSpec.EXACTLY, View.MeasureSpec.EXACTLY);
-	            convertView.setTag(mHolder);
-	        } else {
-	        	mHolder = (ViewHolder) convertView.getTag();
-	        }
-	        
-	        String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS + BossFragmentPagerAdapter.mBackgroundIds[position] + Constants.SUFFIX_JPEG;
-			Bitmap bitmap = BitmapFactory.decodeFile(path);
+            convertView = inflateViews(convertView);
+
+            final String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS + BossFragmentPagerAdapter.mBackgroundIds[position] + Constants.SUFFIX_JPEG;
+			final Bitmap bitmap = BitmapFactory.decodeFile(path);
 			mHolder.mImageViewBackground.setImageBitmap(bitmap);
 	        return convertView;
 	    }
 
-	    private class ViewHolder {
+        private View inflateViews(View convertView) {
+            if (convertView == null) {
+                mHolder = new ViewHolder();
+                convertView = mInflater.inflate(R.layout.grid_item_choose_background, null);
+
+                mHolder.mImageViewBackground = (ImageView) convertView.findViewById(R.id.grid_item_background_image);
+
+                convertView.measure(View.MeasureSpec.EXACTLY, View.MeasureSpec.EXACTLY);
+                convertView.setTag(mHolder);
+            } else {
+                mHolder = (ViewHolder) convertView.getTag();
+            }
+            return convertView;
+        }
+
+        private class ViewHolder {
 	        ImageView   mImageViewBackground;
 	    }
 	}

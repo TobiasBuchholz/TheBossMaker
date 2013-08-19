@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -17,6 +16,7 @@ import de.pmaclothing.listeners.ImageViewGestureListener;
 import de.pmaclothing.utils.Constants;
 import de.pmaclothing.utils.FileHelper;
 import de.pmaclothing.view.BossFragmentPagerAdapter;
+import de.pmaclothing.view.FaceAdjustmentBar;
 import de.pmaclothing.view.WrappingSlidingDrawer;
 
 public class FaceDetectorActivity extends CustomActionBarActivity implements ViewPager.OnPageChangeListener {
@@ -26,11 +26,6 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 
 	private static final int        REQUEST_CODE_CHOOSE_BACKGROUND = 100;
 
-	public static final int        SEEKBAR_MODE_BRIGHTNESS = 0;
-    public static final int        SEEKBAR_MODE_CONTRAST = 1;
-    public static final int        SEEKBAR_MODE_ROTATION = 2;
-    public static final int        SEEKBAR_MODE_SATURATION = 3;
-
 	private static final int        ITEM_OVERFLOW_CHOOSE_BACKGROUND = 0;
 	private static final int        ITEM_OVERFLOW_SAVE = 1;
 	private static final int        ITEM_OVERFLOW_SHARE = 2;
@@ -38,17 +33,14 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 
 	private View                    mFaceContainerGrip;
 	private Button                  mLastSeekBarButton;
-	private SeekBar                 mSeekBar;
+	private FaceAdjustmentBar       mFaceAdjustmentBar;
     private WrappingSlidingDrawer   mSlidingDrawer;
 	
-	private int                     mSeekBarMode = SEEKBAR_MODE_BRIGHTNESS;
-	private int[]                   mSeekBarProgressStates = new int[] {50, 0, 50, 50};
-
 	private boolean                 mOverflowOpen = false;
 	private Animation               mAnimationOverflowIn;
 	private Animation               mAnimationOverflowOut;
 
-    private ViewPager               mViewPager;
+    private ViewPager mViewPager;
     BossFragmentPagerAdapter        mFragmentPagerAdapter;
 
     @Override
@@ -62,7 +54,7 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 
         initViewPager();
         initSlidingDrawer();
-		initSeekBar();
+		initFaceAdjustmentBar();
 		initOverflowListView();
 		initAnimations();
 	}
@@ -90,10 +82,9 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-	    MenuInflater menuInflater = getMenuInflater();
+	    final MenuInflater menuInflater = getMenuInflater();
 	    menuInflater.inflate(R.menu.facedetector, menu);
-	    
-	    return super.onCreateOptionsMenu(menu);
+        return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
@@ -118,19 +109,19 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
     }
 
 	public void onClickButtonModeBrightness(final View view) {
-		toggleButtons((Button) view, SEEKBAR_MODE_BRIGHTNESS);
+		toggleButtons((Button) view, FaceAdjustmentBar.MODE_BRIGHTNESS);
 	}
 	
 	public void onClickButtonModeContrast(final View view) {
-		toggleButtons((Button) view, SEEKBAR_MODE_CONTRAST);
+		toggleButtons((Button) view, FaceAdjustmentBar.MODE_CONTRAST);
 	}
 	
 	public void onClickButtonModeRotation(final View view) {
-		toggleButtons((Button) view, SEEKBAR_MODE_ROTATION);
+		toggleButtons((Button) view, FaceAdjustmentBar.MODE_ROTATION);
 	}
 	
 	public void onClickButtonModeSaturation(final View view) {
-		toggleButtons((Button) view, SEEKBAR_MODE_SATURATION);
+		toggleButtons((Button) view, FaceAdjustmentBar.MODE_SATURATION);
 	}
 	
     private void useHardwareAcceleration() {
@@ -139,17 +130,13 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
         }
     }
 
-    /**
-     *
-     * @return
-     */
-    public int[] getSeekBarProgressStates() {
-        return mSeekBarProgressStates;
+    public FaceAdjustmentBar getFaceAdjustemntBar() {
+        return mFaceAdjustmentBar;
     }
 
     private void toggleButtons(final Button button, final int mode) {
-        mSeekBarMode = mode;
-        mSeekBar.setProgress(mSeekBarProgressStates[mode]);
+        mFaceAdjustmentBar.setProgressMode(mode);
+        mFaceAdjustmentBar.setProgress();
 
         button.setSelected(true);
         mLastSeekBarButton.setSelected(false);
@@ -175,13 +162,13 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
         mSlidingDrawer.setOnDrawerCloseListener(new SlidingDrawer.OnDrawerCloseListener() {
             @Override
             public void onDrawerClosed() {
-                mFaceContainerGrip.setBackgroundResource(R.drawable.button_face_container_up_selector);
+                mFaceContainerGrip.setBackgroundResource(R.drawable.button_face_container_up);
             }
         });
         mSlidingDrawer.setOnDrawerOpenListener(new SlidingDrawer.OnDrawerOpenListener() {
             @Override
             public void onDrawerOpened() {
-                mFaceContainerGrip.setBackgroundResource(R.drawable.button_face_container_down_selector);
+                mFaceContainerGrip.setBackgroundResource(R.drawable.button_face_container_down);
             }
         });
     }
@@ -191,42 +178,41 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 		mAnimationOverflowOut = AnimationUtils.loadAnimation(this, R.anim.scale_to_0);
 	}
 
-	private void initSeekBar() {
-		mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
-		mSeekBar.setProgress(50);
+	private void initFaceAdjustmentBar() {
+		mFaceAdjustmentBar = (FaceAdjustmentBar) findViewById(R.id.face_adjustment_bar);
+		mFaceAdjustmentBar.setProgress(50);
 		
-		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener(){
-			int tempProgress = 50;
-	    	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-	    		if(mSeekBarMode == SEEKBAR_MODE_ROTATION) {
-                    final int degrees = tempProgress - progress;
+		mFaceAdjustmentBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            int tempRotationProgress = 50;
+
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (mFaceAdjustmentBar.isMode(FaceAdjustmentBar.MODE_ROTATION)) {
+                    final int degrees = tempRotationProgress - progress;
                     mFragmentPagerAdapter.getCurrentFragment().rotateFaceImage(degrees);
-	    			tempProgress = progress;
-	    			mSeekBarProgressStates[mSeekBarMode] = progress;
-	    		} else {
-	    			mSeekBarProgressStates[mSeekBarMode] = progress;
+                    tempRotationProgress = progress;
+                    mFaceAdjustmentBar.setProgressState(progress);
+                } else {
+                    mFaceAdjustmentBar.setProgressState(progress);
                     adjustPixelValues();
-	    		}
-	    	}
-			
-			public void onStartTrackingTouch(SeekBar seekBar) {}
-			public void onStopTrackingTouch(SeekBar seekBar) {}
-		});
+                }
+            }
+
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
 	}
 
     private void adjustPixelValues() {
-        final int brightness = (int) (mSeekBarProgressStates[SEEKBAR_MODE_BRIGHTNESS] * 2.55) - 127;
-        final float contrast = mSeekBarProgressStates[SEEKBAR_MODE_CONTRAST] / 10f;
-        final float saturation = mSeekBarProgressStates[SEEKBAR_MODE_SATURATION] / 50f;
-        mFragmentPagerAdapter.getCurrentFragment().adjustPixelValues(brightness, contrast, saturation);
+        mFragmentPagerAdapter.getCurrentFragment().adjustPixelValues(mFaceAdjustmentBar);
     }
 
     private void initOverflowListView() {
 		final ListView listView = (ListView) findViewById(R.id.listview_overflow);
 		final String[] values = new String[] { getString(R.string.choose_background),
 										 getString(R.string.save), 
-										 getString(R.string.share),
-										 getString(R.string.order) };
+										 getString(R.string.share)/*,
+										 getString(R.string.order)*/ };
 	
 		final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.list_item_overflow, R.id.list_item_textview, values);
 		listView.setAdapter(adapter);
