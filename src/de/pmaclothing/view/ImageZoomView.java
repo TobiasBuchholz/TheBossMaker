@@ -134,6 +134,15 @@ public class ImageZoomView extends ImageView {
     }
 
     /**
+     *
+     */
+    public void setPosition(final Point position) {
+        LayoutParams params = new RelativeLayout.LayoutParams(getLayoutParams());
+        params.setMargins(position.x, position.y, 0, 0);
+        setLayoutParams(params);
+    }
+
+    /**
      * @param degrees The degrees to rotate.
      */
     public void rotate(final float degrees, final int pivotX, final int pivotY) {

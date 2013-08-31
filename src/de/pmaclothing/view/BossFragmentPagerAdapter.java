@@ -1,6 +1,7 @@
 package de.pmaclothing.view;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.support.v4.app.*;
 import android.view.GestureDetector;
 import android.view.ViewGroup;
@@ -11,7 +12,10 @@ import de.pmaclothing.facedetect.R;
  * Date: 14.07.13 | Time: 13:46
  */
 public class BossFragmentPagerAdapter extends FixedFragmentStatePagerAdapter {
-    public static final int[]       mBackgroundIds = { R.drawable.sample_background_4, R.drawable.sample_background_2, R.drawable.sample_background_3, R.drawable.screen_test_background};
+    public static final int[]       mBackgroundIds          = { R.drawable.sample_background_4, R.drawable.sample_background_2, R.drawable.sample_background_3, R.drawable.screen_test_background};
+    public static final Point[]     mFacePositions          = { new Point(-110, -120), new Point(-230, -190), new Point(100, -190), new Point(-110, -120)};
+    public static final Point[]     mFaceSavingsPositions   = { new Point(-110, -120), new Point(-110, -120), new Point(-110, -120), new Point(-110, -120)};
+
     private final Context           mContext;
 
     private GestureDetector         mGestureDetector;

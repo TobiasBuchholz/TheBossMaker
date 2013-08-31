@@ -19,28 +19,28 @@ import de.pmaclothing.view.BossFragmentPagerAdapter;
 import de.pmaclothing.view.FaceAdjustmentBar;
 import de.pmaclothing.view.WrappingSlidingDrawer;
 
-public class FaceDetectorActivity extends CustomActionBarActivity implements ViewPager.OnPageChangeListener {
-    public static final String      INTENT_EXTRA_FROM_CAMERA = "de.pmaclothing.facedetector.fromCamera";
+public class FaceDetectorActivity extends CustomActionBarActivity {
+    public static final String      INTENT_EXTRA_FROM_CAMERA        = "de.pmaclothing.facedetector.fromCamera";
 
-    private static final String     LOG_TAG = FaceDetectorActivity.class.getSimpleName();
+    private static final String     LOG_TAG                         = FaceDetectorActivity.class.getSimpleName();
 
-	private static final int        REQUEST_CODE_CHOOSE_BACKGROUND = 100;
+	private static final int        REQUEST_CODE_CHOOSE_BACKGROUND  = 100;
 
 	private static final int        ITEM_OVERFLOW_CHOOSE_BACKGROUND = 0;
-	private static final int        ITEM_OVERFLOW_SAVE = 1;
-	private static final int        ITEM_OVERFLOW_SHARE = 2;
-	private static final int        ITEM_OVERFLOW_ORDER = 3;
+	private static final int        ITEM_OVERFLOW_SAVE              = 1;
+	private static final int        ITEM_OVERFLOW_SHARE             = 2;
+	private static final int        ITEM_OVERFLOW_ORDER             = 3;
 
 	private View                    mFaceContainerGrip;
 	private Button                  mLastSeekBarButton;
 	private FaceAdjustmentBar       mFaceAdjustmentBar;
     private WrappingSlidingDrawer   mSlidingDrawer;
 	
-	private boolean                 mOverflowOpen = false;
+	private boolean                 mOverflowOpen                   = false;
 	private Animation               mAnimationOverflowIn;
 	private Animation               mAnimationOverflowOut;
 
-    private ViewPager mViewPager;
+    private ViewPager               mViewPager;
     BossFragmentPagerAdapter        mFragmentPagerAdapter;
 
     @Override
@@ -63,7 +63,6 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
         mViewPager = (ViewPager) findViewById(R.id.view_pager);
         mFragmentPagerAdapter = new BossFragmentPagerAdapter(getSupportFragmentManager(), this);
         mFragmentPagerAdapter.setGestureDetector(new GestureDetector(this, new ImageViewGestureListener()));
-        mViewPager.setOnPageChangeListener(this);
         mViewPager.setAdapter(mFragmentPagerAdapter);
     }
 
@@ -242,19 +241,4 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 		Intent intent = new Intent(FaceDetectorActivity.this, ChooseBackgroundActivity.class);
 		startActivityForResult(intent, REQUEST_CODE_CHOOSE_BACKGROUND);
 	}
-
-    @Override
-    public void onPageScrolled(final int position, final float positionOffset, final int positionOffsetPixels) {
-
-    }
-
-    @Override
-    public void onPageSelected(final int position) {
-
-    }
-
-    @Override
-    public void onPageScrollStateChanged(final int state) {
-
-    }
 }
