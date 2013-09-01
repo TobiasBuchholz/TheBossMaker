@@ -17,7 +17,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.lang.ref.WeakReference;
 
-public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
+public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
     private static final String            LOG_TAG        = BitmapWorkerTask.class.getSimpleName();
     
     public static int                      IN_SIZE_NONE   = -1;
@@ -27,7 +27,6 @@ public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
     
 
     private final WeakReference<ImageView> mImageViewReference;
-    private String                         mImagePath     = null;
     private boolean                        mFade;
     private Context                        mContext;
 
@@ -37,12 +36,10 @@ public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
     }
     
     @Override
-    protected Bitmap doInBackground(final String... params) {
-        mImagePath = params[0];
-
+    protected Bitmap doInBackground(final Integer... params) {
         Bitmap bitmap = null;
         try {
-            bitmap = decodeSampledBitmapFromDisk(mImagePath);
+            bitmap = decodeSampledBitmapFromDisk(params[0]);
         } catch (final FileNotFoundException e) {
             Log.e(LOG_TAG, ":: doInBackground ::" + e.getMessage(), e);
         } catch (final OutOfMemoryError e) {
@@ -52,10 +49,10 @@ public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
         return bitmap;
     }
 
-    private Bitmap decodeSampledBitmapFromDisk(final String pageUri) throws FileNotFoundException {
+    private Bitmap decodeSampledBitmapFromDisk(final int resId) throws FileNotFoundException {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Config.RGB_565;
-        final Bitmap bitmap = BitmapFactory.decodeStream(new FileInputStream(pageUri), null, options);;
+        final Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), resId);
         return bitmap;
     }
 
@@ -105,17 +102,17 @@ public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
         return null;
     }
     
-    public static boolean cancelPotentialWork(final String data, final ImageView imageView) {
-        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-        
-        if (bitmapWorkerTask != null) {
-            final String bitmapData = bitmapWorkerTask.mImagePath;
-            if (bitmapData != data) {
-                bitmapWorkerTask.cancel(true);
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
+//    public static boolean cancelPotentialWork(final String data, final ImageView imageView) {
+//        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
+//
+//        if (bitmapWorkerTask != null) {
+//            final String bitmapData = bitmapWorkerTask.mImagePath;
+//            if (bitmapData != data) {
+//                bitmapWorkerTask.cancel(true);
+//            } else {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 }

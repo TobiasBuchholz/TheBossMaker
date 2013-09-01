@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.*;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -19,9 +18,6 @@ import de.pmaclothing.interfaces.FaceDetectorTaskListener;
 import de.pmaclothing.utils.*;
 import de.pmaclothing.task.BitmapWorkerTask;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-
 /**
  * User: tobiasbuchholz @ PressMatrix GmbH
  * Date: 14.07.13 | Time: 13:37
@@ -29,7 +25,6 @@ import java.io.FileOutputStream;
 public class BossFragment extends Fragment {
     private static final String     LOG_TAG                 = BossFragment.class.getSimpleName();
 
-    private static final String     MIME_TYPE_IMAGE_JPG     = "image/jpeg";
     private static final int        FACE_SPACE              = 220;
 
     private Activity                mActivity;
@@ -43,9 +38,6 @@ public class BossFragment extends Fragment {
     private GestureDetector         mGestureDetector;
     private DisplayMetrics          mDisplayMetrics;
     private ProgressDialog          mProgressDialog;
-    private Thread                  mBitmapCompressThread;
-
-    private Uri                     mImageUri;
 
     private int                     mResourceId;
     private int                     mBackgroundNumber;
@@ -61,6 +53,14 @@ public class BossFragment extends Fragment {
         fragment.mResourceId = BossFragmentPagerAdapter.mBackgroundIds[backgroundNumber];
         fragment.mBackgroundNumber = backgroundNumber;
         return fragment;
+    }
+
+    public void applyBackgroundChange(int backgroundPos) {
+        mBackgroundNumber = backgroundPos;
+        mBitmapBackground = BitmapFactory.decodeResource(getResources(), BossFragmentPagerAdapter.mBackgroundIds[mBackgroundNumber]);
+        mImageViewBackground.setImageBitmap(mBitmapBackground);
+        mImageViewFace.setPosition(mFaceSavingPosition);
+        mImageViewFace.centerImage();
     }
 
     public void rotateFaceImage(final float degrees) {
@@ -107,6 +107,14 @@ public class BossFragment extends Fragment {
             }
         };
         mImageViewBackground.setOnTouchListener(listener);
+    }
+
+    public void loadBitmap(final int resId, final ImageView imageView) {
+        final BitmapWorkerTask task = new BitmapWorkerTask(getActivity(), imageView);
+        final Bitmap placeHolderBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.app_logo_48);
+        final AsyncDrawable asyncDrawable = new AsyncDrawable(getResources(), placeHolderBitmap, task);
+        imageView.setImageDrawable(asyncDrawable);
+        task.execute(resId);
     }
 
     @Override
@@ -188,14 +196,6 @@ public class BossFragment extends Fragment {
         mGestureDetector = detector;
     }
 
-    public void loadBitmap(final String imagePath, final ImageView imageView) {
-        final BitmapWorkerTask task = new BitmapWorkerTask(getActivity(), imageView);
-        final Bitmap placeHolderBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.app_logo_48);
-        final AsyncDrawable asyncDrawable = new AsyncDrawable(getResources(), placeHolderBitmap, task);
-        imageView.setImageDrawable(asyncDrawable);
-        task.execute(imagePath);
-    }
-
     private void startFaceDetectorTask() {
         mProgressDialog.show();
         float scaleFactor = (float) mDisplayMetrics.heightPixels / (float) mBitmapBackground.getHeight();
@@ -257,57 +257,17 @@ public class BossFragment extends Fragment {
     }
 
     public void shareBitmap() {
-        if(mImageUri == null) {
-            mProgressDialog.show();
-            compressCurrentBoss();
-        }
-        startActivity(Intent.createChooser(createShareIntent(), getString(R.string.share_chooser_text)));
+        mProgressDialog.show();
+        Utils.executeBackgroundTask(createBitmapSharingTask(), mergeBitmaps());
     }
 
-    private Intent createShareIntent() {
-        final Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Keep Yourself");
-        shareIntent.setType(MIME_TYPE_IMAGE_JPG);
-        shareIntent.putExtra(Intent.EXTRA_TEXT, "some text bla bla");
-        try {
-            mBitmapCompressThread.join();
-            if (mImageUri != null) {
-                shareIntent.putExtra(Intent.EXTRA_STREAM, mImageUri);
-                mImageUri = null;
-            }
-            mProgressDialog.dismiss();
-        } catch (final InterruptedException e) {
-            Log.e(LOG_TAG, "Error at joining the bitmap compressing thread: " + e.getMessage());
-        }
-        return shareIntent;
-    }
-
-    private void compressCurrentBoss() {
-        mBitmapCompressThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String imagePath = Constants.PMA_BOSSES_FILE_PATH + Constants.KEEPER_TO_SHARE_PNG;
-
-                Bitmap bitmap = mergeBitmaps();
-                try {
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, new FileOutputStream(imagePath));
-                } catch (final FileNotFoundException e) {
-                    imagePath = null;
-                    Log.e(LOG_TAG, "Error at compressing image to share: " + e.getMessage(), e);
+    private BitmapSharingTask createBitmapSharingTask() {
+        return new BitmapSharingTask(new BitmapSharingTask.Callback() {
+                @Override
+                public void onTaskFinish(final Intent shareIntent) {
+                    startActivity(Intent.createChooser(shareIntent, getString(R.string.share_chooser_text)));
+                    mProgressDialog.dismiss();
                 }
-                if (imagePath != null) {
-                    mImageUri = Uri.parse(Constants.PREFIX_FILE_PATH + imagePath);
-                }
-            }
-        });
-        mBitmapCompressThread.start();
-    }
-
-    public void applyBackgroundChange(int backgroundPos) {
-        mBackgroundNumber = backgroundPos;
-        mBitmapBackground = BitmapFactory.decodeResource(getResources(), BossFragmentPagerAdapter.mBackgroundIds[mBackgroundNumber]);
-        mImageViewBackground.setImageBitmap(mBitmapBackground);
-        mImageViewFace.setPosition(mFaceSavingPosition);
-        mImageViewFace.centerImage();
+            });
     }
 }
