@@ -1,15 +1,21 @@
 package de.pmaclothing.utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
+import android.graphics.Bitmap;
 import android.os.Environment;
+import android.util.Log;
 
 public class FileHelper {
-	public static final int IS_DIRECTORY = -1;
-	public static final int IS_FILE = 1;
-	public static final int IS_NOTHING = 0;
-	
-	/**
+    public static final String  LOG_TAG         = FileHelper.class.getSimpleName();
+    public static final int     IS_DIRECTORY    = -1;
+    public static final int     IS_FILE         = 1;
+    public static final int     IS_NOTHING      = 0;
+
+    /**
      * Checks whether a file or directory exists.
      * 
      * @param path Path to the file or directory.
@@ -40,5 +46,29 @@ public class FileHelper {
             return file.delete();
     	}
     	return false;
+    }
+
+    public static boolean saveBitmap(final Bitmap bitmap, final String fileName) {
+        boolean success = false;
+        String filepath = Constants.PMA_BOSSES_FILE_PATH;
+        if(FileHelper.exists(filepath) != FileHelper.IS_DIRECTORY) {
+            new File(filepath).mkdir();
+        }
+        filepath += fileName;
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(filepath);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.flush();
+            success = true;
+        } catch (FileNotFoundException e) {
+            Log.e(LOG_TAG, ":: saveBitmap ::" + e, e);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, ":: saveBitmap ::" + e, e);
+        } finally {
+            if(fos != null) try { fos.close(); } catch (IOException e) { Log.e(LOG_TAG, ":: saveBitmap ::" + e, e); }
+        }
+        return success;
     }
 }
