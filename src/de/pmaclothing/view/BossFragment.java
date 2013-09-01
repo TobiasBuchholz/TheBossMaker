@@ -20,6 +20,8 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import de.pmaclothing.activities.FaceDetectorActivity;
 import de.pmaclothing.facedetect.R;
+import de.pmaclothing.utils.BitmapTransformValues;
+import de.pmaclothing.utils.BitmapTransformer;
 import de.pmaclothing.utils.Constants;
 import de.pmaclothing.utils.FileHelper;
 import de.pmaclothing.task.BitmapWorkerTask;
@@ -64,6 +66,7 @@ public class BossFragment extends Fragment {
     private Point                   mFacePosition;
     /** Position for saving the image. The upper left corner represents x = 0 | y = 0. */
     private Point                   mFaceSavingPosition;
+    private BitmapTransformer       mBitmapTransformer;
 
     public static BossFragment instantiate(final Context context, final String fname, final int backgroundNumber) {
         final BossFragment fragment = (BossFragment) instantiate(context, fname);
@@ -123,7 +126,7 @@ public class BossFragment extends Fragment {
         mBitmapFace = savedFaceBitmap.copy(savedFaceBitmap.getConfig(), true);
 
         if(mBitmapFace != null) {
-            determineOriginalPixels();
+            mBitmapTransformer = new BitmapTransformer(mBitmapFace);
             mImageViewFace.setImageBitmapWithTransition(mBitmapFace);
             initAndSetFacePosition();
         }
@@ -132,6 +135,16 @@ public class BossFragment extends Fragment {
     private void updatePixelValues() {
         final FaceAdjustmentBar faceAdjustmentBar = ((FaceDetectorActivity) mActivity).getFaceAdjustemntBar();
         adjustPixelValues(faceAdjustmentBar);
+    }
+
+    public void adjustPixelValues(final FaceAdjustmentBar bar) {
+        final int brightness = (int) (bar.getProgressState(FaceAdjustmentBar.MODE_BRIGHTNESS) * 2.55) - 127;
+        final float contrast = bar.getProgressState(FaceAdjustmentBar.MODE_CONTRAST) / 10f;
+        final float saturation = bar.getProgressState(FaceAdjustmentBar.MODE_SATURATION) / 50f;
+
+        final BitmapTransformValues transformValues = new BitmapTransformValues(brightness, contrast, saturation);
+        final Bitmap bitmap = mBitmapTransformer.getTransformedBitmap(mBitmapFace, transformValues);
+        mImageViewFace.setImageBitmap(bitmap);
     }
 
     private void initAndSetFacePosition() {
@@ -212,7 +225,7 @@ public class BossFragment extends Fragment {
                 if(mBitmapFace == null) {
                     return false;
                 }
-                determineOriginalPixels();
+
                 saveBitmap(mBitmapFace, Constants.TEMP_FACE_PNG);
                 return true;
             }
@@ -221,6 +234,7 @@ public class BossFragment extends Fragment {
             protected void onPostExecute(final Boolean result) {
                 mProgressDialog.dismiss();
                 if(result) {
+                    mBitmapTransformer = new BitmapTransformer(mBitmapFace);
                     mImageViewFace.setImageBitmapWithTransition(mBitmapFace);
                     initAndSetFacePosition();
                 } else {
@@ -349,65 +363,6 @@ public class BossFragment extends Fragment {
             }
         }
         return null;
-    }
-
-    private void determineOriginalPixels() {
-        int width = mBitmapFace.getWidth();
-        int height = mBitmapFace.getHeight();
-        mOriginalPixels = new int[width * height];
-        mBitmapFace.getPixels(mOriginalPixels, 0, width, 0, 0, width, height);
-    }
-
-    public void adjustPixelValues(final FaceAdjustmentBar bar) {
-        final int brightness = (int) (bar.getProgressState(FaceAdjustmentBar.MODE_BRIGHTNESS) * 2.55) - 127;
-        final float contrast = bar.getProgressState(FaceAdjustmentBar.MODE_CONTRAST) / 10f;
-        final float saturation = bar.getProgressState(FaceAdjustmentBar.MODE_SATURATION) / 50f;
-
-        final int width = mBitmapFace.getWidth();
-        final int height = mBitmapFace.getHeight();
-
-        int[] pixels = new int[width * height];
-        for(int pos = 0; pos < pixels.length; pos++) {
-            int argb = mOriginalPixels[pos];
-
-            int r = (argb >> 16) & 0xff;
-            int g = (argb >>  8) & 0xff;
-            int b =  argb        & 0xff;
-
-            // transformation to Y-Cb-Cr
-            int ylum = (int) (0.299 * r + 0.587 * g + 0.114 * b);
-            int cb   = (int) (-0.168736 * r - 0.331264 * g + 0.5 * b);
-            int cr   = (int) (0.5 * r - 0.418688 * g - 0.081312 * b);
-
-            // adjust brightness
-            ylum += brightness;
-
-            // adjust contrast
-            if (contrast > 1) {
-                ylum = (int) ((contrast) * (ylum - 127) + 127);
-            }
-
-            // adjust saturation
-            cb = (int) (cb * saturation );
-            cr = (int) (cr * saturation );
-
-            // transformation back to RGB
-            r = (int) (ylum + 1.402 * cr);
-            g = (int) (ylum - 0.3441 * cb - 0.7141 * cr);
-            b = (int) (ylum + 1.772 * cb);
-
-            if(r > 255) 	r = 255;
-            if(g > 255) 	g = 255;
-            if(b > 255)		b = 255;
-            if(r < 0)		r = 0;
-            if(g < 0)		g = 0;
-            if(b < 0)		b = 0;
-
-            argb = (0xFF<<24) | (r<<16) | (g<<8) | b;
-            pixels[pos] = argb;
-        }
-        mBitmapFace.setPixels(pixels, 0, width, 0, 0, width, height);
-        mImageViewFace.setImageBitmapWithTransition(mBitmapFace);
     }
 
     public void rotateFaceImage(final float degrees) {
