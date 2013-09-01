@@ -7,7 +7,9 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.util.Log;
@@ -18,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.Toast;
+import de.pmaclothing.facedetect.R;
 
 /**
  * @see "http://code.google.com/p/android-image-process"
@@ -120,6 +123,14 @@ public class ImageZoomView extends ImageView {
             mImageBounds = drawable.getBounds();
         }
         super.setImageDrawable(drawable);
+    }
+
+    public void setImageBitmapWithTransition(final Bitmap bitmap) {
+        final BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
+        final Drawable placeHolderDrawable = getResources().getDrawable(R.drawable.app_logo_48);
+        final TransitionDrawable td = new TransitionDrawable(new Drawable[] {placeHolderDrawable, bitmapDrawable});
+        setImageDrawable(td);
+        td.startTransition(500);
     }
     
     /**

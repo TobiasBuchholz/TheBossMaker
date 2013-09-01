@@ -22,6 +22,7 @@ import de.pmaclothing.activities.FaceDetectorActivity;
 import de.pmaclothing.facedetect.R;
 import de.pmaclothing.utils.Constants;
 import de.pmaclothing.utils.FileHelper;
+import de.pmaclothing.task.BitmapWorkerTask;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -117,25 +118,39 @@ public class BossFragment extends Fragment {
         }
     }
 
-    private void updatePixelValues() {
-        final FaceAdjustmentBar faceAdjustmentBar = ((FaceDetectorActivity) mActivity).getFaceAdjustemntBar();
-        adjustPixelValues(faceAdjustmentBar);
-    }
-
     private void loadFaceBitmapFromDisk() {
         final Bitmap savedFaceBitmap = BitmapFactory.decodeFile(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG);
         mBitmapFace = savedFaceBitmap.copy(savedFaceBitmap.getConfig(), true);
 
         if(mBitmapFace != null) {
             determineOriginalPixels();
-            mImageViewFace.setImageBitmap(mBitmapFace);
+            mImageViewFace.setImageBitmapWithTransition(mBitmapFace);
             initAndSetFacePosition();
         }
+    }
+
+    private void updatePixelValues() {
+        final FaceAdjustmentBar faceAdjustmentBar = ((FaceDetectorActivity) mActivity).getFaceAdjustemntBar();
+        adjustPixelValues(faceAdjustmentBar);
     }
 
     private void initAndSetFacePosition() {
         initFacePosition();
         mImageViewFace.setPosition(mFacePosition);
+    }
+
+    private void initFacePosition() {
+        mFacePosition = calcFaceOnScreenPosition(BossFragmentPagerAdapter.mFacePositions[mBackgroundNumber]);
+        mFaceSavingPosition = BossFragmentPagerAdapter.mFaceSavingsPositions[mBackgroundNumber];
+    }
+
+    private Point calcFaceOnScreenPosition(final Point distFromCenter) {
+        final float displayImageScale = (float) mImageViewBackground.getHeight() / (float) mBitmapBackground.getHeight();
+        final int scaledX = (int) (distFromCenter.x * displayImageScale * mDisplayMetrics.density);
+        final int scaledY = (int) (distFromCenter.y * displayImageScale * mDisplayMetrics.density);
+        final int resultX = mImageViewBackground.getWidth() / 2 + scaledX;
+        final int resultY = mImageViewBackground.getHeight() / 2 + scaledY;
+        return new Point(resultX, resultY);
     }
 
     public void setGestureDetector(final GestureDetector detector) {
@@ -156,6 +171,14 @@ public class BossFragment extends Fragment {
             }
         };
         mImageViewBackground.setOnTouchListener(listener);
+    }
+
+    public void loadBitmap(final String imagePath, final ImageView imageView) {
+        final BitmapWorkerTask task = new BitmapWorkerTask(getActivity(), imageView);
+        final Bitmap placeHolderBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.app_logo_48);
+        final AsyncDrawable asyncDrawable = new AsyncDrawable(getResources(), placeHolderBitmap, task);
+        imageView.setImageDrawable(asyncDrawable);
+        task.execute(imagePath);
     }
 
     private void initDisplayDimensions() {
@@ -198,7 +221,7 @@ public class BossFragment extends Fragment {
             protected void onPostExecute(final Boolean result) {
                 mProgressDialog.dismiss();
                 if(result) {
-                    mImageViewFace.setImageBitmap(mBitmapFace);
+                    mImageViewFace.setImageBitmapWithTransition(mBitmapFace);
                     initAndSetFacePosition();
                 } else {
                     Toast.makeText(mActivity, R.string.no_faces_found, Toast.LENGTH_LONG).show();
@@ -250,6 +273,7 @@ public class BossFragment extends Fragment {
         return orientation;
     }
 
+
     /** if this doesn't work, check: http://stackoverflow.com/questions/8450539/images-taken-with-action-image-capture-always-returns-1-for-exifinterface-tag-or/8864367#8864367*/
     private int getImageOrientation(final String imagePath) {
         int orientation = 0;
@@ -273,7 +297,6 @@ public class BossFragment extends Fragment {
         }
         return orientation;
     }
-
 
     private String getImagePath(final Uri imageUri) {
         String filePath = "";
@@ -335,21 +358,6 @@ public class BossFragment extends Fragment {
         mBitmapFace.getPixels(mOriginalPixels, 0, width, 0, 0, width, height);
     }
 
-    private void initFacePosition() {
-        // TODO: face position depends on background number
-        mFacePosition = calcFaceOnScreenPosition(BossFragmentPagerAdapter.mFacePositions[mBackgroundNumber]);
-        mFaceSavingPosition = BossFragmentPagerAdapter.mFaceSavingsPositions[mBackgroundNumber];
-    }
-
-    private Point calcFaceOnScreenPosition(final Point distFromCenter) {
-        final float displayImageScale = (float) mImageViewBackground.getHeight() / (float) mBitmapBackground.getHeight();
-        final int scaledX = (int) (distFromCenter.x * displayImageScale * mDisplayMetrics.density);
-        final int scaledY = (int) (distFromCenter.y * displayImageScale * mDisplayMetrics.density);
-        final int resultX = mImageViewBackground.getWidth() / 2 + scaledX;
-        final int resultY = mImageViewBackground.getHeight() / 2 + scaledY;
-        return new Point(resultX, resultY);
-    }
-
     public void adjustPixelValues(final FaceAdjustmentBar bar) {
         final int brightness = (int) (bar.getProgressState(FaceAdjustmentBar.MODE_BRIGHTNESS) * 2.55) - 127;
         final float contrast = bar.getProgressState(FaceAdjustmentBar.MODE_CONTRAST) / 10f;
@@ -399,7 +407,7 @@ public class BossFragment extends Fragment {
             pixels[pos] = argb;
         }
         mBitmapFace.setPixels(pixels, 0, width, 0, 0, width, height);
-        mImageViewFace.setImageBitmap(mBitmapFace);
+        mImageViewFace.setImageBitmapWithTransition(mBitmapFace);
     }
 
     public void rotateFaceImage(final float degrees) {
