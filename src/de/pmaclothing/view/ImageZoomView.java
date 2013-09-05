@@ -127,7 +127,7 @@ public class ImageZoomView extends ImageView {
 
     public void setImageBitmapWithTransition(final Bitmap bitmap) {
         final BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-        final Drawable placeHolderDrawable = getResources().getDrawable(R.drawable.app_logo_48);
+        final Drawable placeHolderDrawable = getResources().getDrawable(R.drawable.shit);
         final TransitionDrawable td = new TransitionDrawable(new Drawable[] {placeHolderDrawable, bitmapDrawable});
         setImageDrawable(td);
         td.startTransition(500);

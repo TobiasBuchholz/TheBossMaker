@@ -11,7 +11,7 @@ import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
-import de.pmaclothing.interfaces.FaceDetectorTaskListener;
+import de.pmaclothing.interfaces.OnBitmapTaskListener;
 
 import java.io.IOException;
 
@@ -26,14 +26,14 @@ public class FaceDetectorTask extends AsyncTask<Uri, Void, Boolean> {
     private int                         mFaceSpace;
     private Bitmap                      mCameraBitmap;
     private Bitmap                      mFaceBitmap;
-    private FaceDetectorTaskListener    mListener;
+    private OnBitmapTaskListener mListener;
 
     public FaceDetectorTask(final ContentResolver contentResolver, final int faceSpace) {
         mContentResolver = contentResolver;
         mFaceSpace = faceSpace;
     }
 
-    public void setOnTaskListener(FaceDetectorTaskListener listener) {
+    public void setOnTaskListener(OnBitmapTaskListener listener) {
         mListener = listener;
     }
 

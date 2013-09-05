@@ -11,13 +11,16 @@ import android.graphics.drawable.TransitionDrawable;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
+import de.pmaclothing.facedetect.R;
+import de.pmaclothing.interfaces.OnBitmapTaskListener;
 import de.pmaclothing.view.AsyncDrawable;
+import de.pmaclothing.view.ImageZoomView;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.lang.ref.WeakReference;
 
-public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
+public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
     private static final String            LOG_TAG        = BitmapWorkerTask.class.getSimpleName();
     
     public static int                      IN_SIZE_NONE   = -1;
@@ -27,16 +30,20 @@ public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
     
 
     private final WeakReference<ImageView> mImageViewReference;
-    private boolean                        mFade;
     private Context                        mContext;
+    private OnBitmapTaskListener           mListener;
 
     public BitmapWorkerTask(final Context context, final ImageView imageView) {
         mContext = context;
         mImageViewReference = new WeakReference<ImageView>(imageView);
     }
-    
+
+    public void setOnBitmapTaskListener(final OnBitmapTaskListener listener) {
+        mListener = listener;
+    }
+
     @Override
-    protected Bitmap doInBackground(final Integer... params) {
+    protected Bitmap doInBackground(final String... params) {
         Bitmap bitmap = null;
         try {
             bitmap = decodeSampledBitmapFromDisk(params[0]);
@@ -49,10 +56,10 @@ public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
         return bitmap;
     }
 
-    private Bitmap decodeSampledBitmapFromDisk(final int resId) throws FileNotFoundException {
+    private Bitmap decodeSampledBitmapFromDisk(final String imagePath) throws FileNotFoundException {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Config.RGB_565;
-        final Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), resId);
+        final Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
         return bitmap;
     }
 
@@ -67,27 +74,10 @@ public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
             final ImageView imageView = mImageViewReference.get();
             final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
             if (this == bitmapWorkerTask && imageView != null) {
-                setImageBitmap(imageView, bitmap);
+                if(mListener != null) {
+                    mListener.onTaskFinishSuccess(bitmap);
+                }
             }
-        }
-    }
-
-    public void enableTransition() {
-        mFade = true;
-    }
-
-    public void disableTransition() {
-        mFade = false;
-    }
-
-    private void setImageBitmap(final ImageView imageView, final Bitmap bitmap) {
-        if (mFade) {
-            final BitmapDrawable bitmapDrawable = new BitmapDrawable(mContext.getResources(), bitmap);
-            final TransitionDrawable td = new TransitionDrawable(new Drawable[] { new ColorDrawable(android.R.color.transparent), bitmapDrawable});
-            imageView.setImageDrawable(td);
-            td.startTransition(200);
-        } else {
-            imageView.setImageBitmap(bitmap);
         }
     }
 
@@ -101,7 +91,7 @@ public class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
         }
         return null;
     }
-    
+
 //    public static boolean cancelPotentialWork(final String data, final ImageView imageView) {
 //        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
 //

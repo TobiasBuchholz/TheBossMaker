@@ -1,5 +1,6 @@
 package de.pmaclothing.activities;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,7 +20,7 @@ import de.pmaclothing.view.BossFragmentPagerAdapter;
 import de.pmaclothing.view.FaceAdjustmentBar;
 import de.pmaclothing.view.WrappingSlidingDrawer;
 
-public class FaceDetectorActivity extends CustomActionBarActivity {
+public class FaceDetectorActivity extends CustomActionBarActivity implements ViewPager.OnPageChangeListener {
     public static final String      INTENT_EXTRA_FROM_CAMERA        = "de.pmaclothing.facedetector.fromCamera";
 
     private static final String     LOG_TAG                         = FaceDetectorActivity.class.getSimpleName();
@@ -41,7 +42,8 @@ public class FaceDetectorActivity extends CustomActionBarActivity {
 	private Animation               mAnimationOverflowOut;
 
     private ViewPager               mViewPager;
-    BossFragmentPagerAdapter        mFragmentPagerAdapter;
+    private ProgressDialog          mProgressDialog;
+    private BossFragmentPagerAdapter        mFragmentPagerAdapter;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,7 @@ public class FaceDetectorActivity extends CustomActionBarActivity {
 
         useHardwareAcceleration();
 
+        initProgressDialog();
         initViewPager();
         initSlidingDrawer();
 		initFaceAdjustmentBar();
@@ -59,11 +62,17 @@ public class FaceDetectorActivity extends CustomActionBarActivity {
 		initAnimations();
 	}
 
+    private void initProgressDialog() {
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setMessage(getString(R.string.please_wait));
+    }
+
     private void initViewPager() {
         mViewPager = (ViewPager) findViewById(R.id.view_pager);
         mFragmentPagerAdapter = new BossFragmentPagerAdapter(getSupportFragmentManager(), this);
         mFragmentPagerAdapter.setGestureDetector(new GestureDetector(this, new ImageViewGestureListener()));
         mViewPager.setAdapter(mFragmentPagerAdapter);
+        mViewPager.setOnPageChangeListener(this);
     }
 
     @Override
@@ -241,4 +250,20 @@ public class FaceDetectorActivity extends CustomActionBarActivity {
 		Intent intent = new Intent(FaceDetectorActivity.this, ChooseBackgroundActivity.class);
 		startActivityForResult(intent, REQUEST_CODE_CHOOSE_BACKGROUND);
 	}
+
+    @Override
+    public void onPageScrolled(final int position, final float positionOffset, final int positionOffsetPixels) {
+    }
+
+    @Override
+    public void onPageSelected(final int position) {
+        mProgressDialog.show();
+    }
+
+    @Override
+    public void onPageScrollStateChanged(final int state) {}
+
+    public void dismissProgressDialog() {
+        mProgressDialog.dismiss();
+    }
 }

@@ -14,6 +14,6 @@ public class ImageViewGestureListener extends SimpleOnGestureListener {
 	
 	@Override
 	public boolean onDown(MotionEvent e) {
-		return true;
+		return false;
 	}
 }

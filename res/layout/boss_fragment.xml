@@ -7,6 +7,7 @@
             android:id="@+id/image_view_face"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:src="@drawable/shit"
             android:scaleType="matrix"
             android:adjustViewBounds="true"
             android:background="#000000"/>
@@ -14,5 +15,5 @@
             android:id="@+id/image_view_background"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"/>
 </RelativeLayout>
