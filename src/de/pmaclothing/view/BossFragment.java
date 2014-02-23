@@ -1,6 +1,5 @@
 package de.pmaclothing.view;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -26,11 +25,13 @@ public class BossFragment extends Fragment {
     private static final String     LOG_TAG                 = BossFragment.class.getSimpleName();
 
     private static final int        FACE_SPACE              = 220;
+    public static final int         PROGRESS_PADDING        = 40;
 
-    private Activity                mActivity;
+    private FaceDetectorActivity    mActivity;
 
     private ImageZoomView           mImageViewFace;
     private ImageView               mImageViewBackground;
+    private ImageZoomView           mImageViewProgress;
 
     private Bitmap                  mBitmapFace;
     private Bitmap                  mBitmapBackground;
@@ -41,6 +42,7 @@ public class BossFragment extends Fragment {
 
     private int                     mResourceId;
     private int                     mBackgroundNumber;
+    private int                     mProgressPadding;
 
     /** Position for displaying the image on the screen. The midpoint of the screen represents x = 0 | y = 0. */
     private Point                   mFacePosition;
@@ -59,7 +61,8 @@ public class BossFragment extends Fragment {
         mBackgroundNumber = backgroundPos;
         mBitmapBackground = BitmapFactory.decodeResource(getResources(), BossFragmentPagerAdapter.mBackgroundIds[mBackgroundNumber]);
         mImageViewBackground.setImageBitmap(mBitmapBackground);
-        mImageViewFace.setPosition(mFaceSavingPosition);
+        mImageViewFace.setPosition(mFacePosition);
+        mImageViewProgress.setPosition(mFacePosition.x + mProgressPadding, mFacePosition.y + mProgressPadding);
         mImageViewFace.centerImage();
     }
 
@@ -70,7 +73,7 @@ public class BossFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mActivity = getActivity();
+        mActivity = (FaceDetectorActivity) getActivity();
         initDisplayDimensions();
         initProgressDialog();
     }
@@ -78,6 +81,7 @@ public class BossFragment extends Fragment {
     private void initDisplayDimensions() {
         mDisplayMetrics = new DisplayMetrics();
         mActivity.getWindowManager().getDefaultDisplay().getMetrics(mDisplayMetrics);
+        mProgressPadding = (int) (PROGRESS_PADDING * mDisplayMetrics.density);
     }
 
     private void initProgressDialog() {
@@ -95,9 +99,10 @@ public class BossFragment extends Fragment {
 
     private void initImageViews(final View view) {
         mBitmapBackground = BitmapFactory.decodeResource(getResources(), mResourceId);
-
         mImageViewFace = (ImageZoomView) view.findViewById(R.id.image_view_face);
         mImageViewBackground = (ImageView) view.findViewById(R.id.image_view_background);
+        mImageViewProgress = (ImageZoomView) view.findViewById(R.id.image_view_progress_circle);
+        mImageViewProgress.startRotateAnimation();
         mImageViewBackground.setImageBitmap(mBitmapBackground);
 
         setupTouchListener();
@@ -127,6 +132,7 @@ public class BossFragment extends Fragment {
     private void initAndSetFacePosition() {
         initFacePosition();
         mImageViewFace.setPosition(mFacePosition);
+        mImageViewProgress.setPosition(mFacePosition.x + mProgressPadding, mFacePosition.y + mProgressPadding);
     }
 
     private void initFacePosition() {
@@ -153,6 +159,34 @@ public class BossFragment extends Fragment {
 
     private boolean shouldProcessImage() {
         return !tempImageExists() && mBackgroundNumber == 0;
+    }
+
+    private void startFaceDetectorTask() {
+        final float scaleFactor = (float) mDisplayMetrics.heightPixels / (float) mBitmapBackground.getHeight();
+        final int faceSpace = (int) (scaleFactor * FACE_SPACE * mDisplayMetrics.density);
+        final Uri imageUri = mActivity.getIntent().getData();
+
+        final FaceDetectorTask faceDetectorTask = new FaceDetectorTask(mActivity.getContentResolver(), faceSpace);
+        final OnBitmapTaskListener listener = createOnFaceDetectorTaskListener();
+        faceDetectorTask.setOnTaskListener(listener);
+        Utils.executeBackgroundTask(faceDetectorTask, imageUri);
+    }
+
+    private OnBitmapTaskListener createOnFaceDetectorTaskListener() {
+        return new OnBitmapTaskListener() {
+            @Override
+            public void onTaskFinishSuccess(final Bitmap bitmap) {
+                mBitmapFace = bitmap;
+                mBitmapTransformer = new BitmapTransformer(mBitmapFace);
+                mImageViewFace.setImageBitmap(mBitmapFace);
+            }
+
+            @Override
+            public void onTaskFinishFail() {
+                Toast.makeText(mActivity, R.string.no_faces_found, Toast.LENGTH_LONG).show();
+                mActivity.finish();
+            }
+        };
     }
 
     private boolean tempImageExists() {
@@ -185,15 +219,18 @@ public class BossFragment extends Fragment {
     }
 
     public void loadBitmap(final String imagePath, final ImageView imageView) {
-        final BitmapWorkerTask task = new BitmapWorkerTask(getActivity(), imageView);
-        final Bitmap placeHolderBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.shit);
-        final AsyncDrawable asyncDrawable = new AsyncDrawable(getResources(), placeHolderBitmap, task);
+        final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
+        final AsyncDrawable asyncDrawable = new AsyncDrawable(getResources(), null, task);
         imageView.setImageDrawable(asyncDrawable);
+        setListenerToBitmapWorkerTask(task);
+        Utils.executeBackgroundTask(task, imagePath);
+    }
 
+    private void setListenerToBitmapWorkerTask(final BitmapWorkerTask task) {
         task.setOnBitmapTaskListener(new OnBitmapTaskListener() {
             @Override
             public void onTaskFinishSuccess(final Bitmap bitmap) {
-                mImageViewFace.setImageBitmapWithTransition(bitmap);
+                mImageViewFace.setImageBitmap(bitmap);
                 mBitmapFace = bitmap.copy(bitmap.getConfig(), true);
                 mBitmapTransformer = new BitmapTransformer(mBitmapFace);
                 updatePixelValues();
@@ -201,17 +238,12 @@ public class BossFragment extends Fragment {
 
             @Override
             public void onTaskFinishFail() {}
-
-            @Override
-            public void onTaskError() {}
         });
-        Utils.executeBackgroundTask(task, imagePath);
     }
 
     private void updatePixelValues() {
-        final FaceAdjustmentBar faceAdjustmentBar = ((FaceDetectorActivity) mActivity).getFaceAdjustemntBar();
+        final FaceAdjustmentBar faceAdjustmentBar = mActivity.getFaceAdjustmentBar();
         adjustPixelValues(faceAdjustmentBar);
-        ((FaceDetectorActivity) mActivity).dismissProgressDialog();
     }
 
     public void adjustPixelValues(final FaceAdjustmentBar bar) {
@@ -226,39 +258,6 @@ public class BossFragment extends Fragment {
 
     public void setGestureDetector(final GestureDetector detector) {
         mGestureDetector = detector;
-    }
-
-    private void startFaceDetectorTask() {
-        showProgressDialog();
-        float scaleFactor = (float) mDisplayMetrics.heightPixels / (float) mBitmapBackground.getHeight();
-        final int faceSpace = (int) (scaleFactor * FACE_SPACE * mDisplayMetrics.density);
-        final Uri imageUri = mActivity.getIntent().getData();
-
-        final FaceDetectorTask faceDetectorTask = new FaceDetectorTask(mActivity.getContentResolver(), faceSpace);
-        final OnBitmapTaskListener listener = createOnFaceDetectorTaskListener();
-        faceDetectorTask.setOnTaskListener(listener);
-        Utils.executeBackgroundTask(faceDetectorTask, imageUri);
-    }
-
-    private OnBitmapTaskListener createOnFaceDetectorTaskListener() {
-        return new OnBitmapTaskListener() {
-            @Override
-            public void onTaskFinishSuccess(final Bitmap bitmap) {
-                mProgressDialog.dismiss();
-                mBitmapFace = bitmap;
-                mBitmapTransformer = new BitmapTransformer(mBitmapFace);
-                mImageViewFace.setImageBitmapWithTransition(mBitmapFace);
-            }
-
-            @Override
-            public void onTaskFinishFail() {
-                mProgressDialog.dismiss();
-                Toast.makeText(mActivity, R.string.no_faces_found, Toast.LENGTH_LONG).show();
-                mActivity.finish();
-            }
-            @Override
-            public void onTaskError() {}
-        };
     }
 
     public boolean saveBoss() {

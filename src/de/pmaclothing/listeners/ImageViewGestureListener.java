@@ -16,4 +16,9 @@ public class ImageViewGestureListener extends SimpleOnGestureListener {
 	public boolean onDown(MotionEvent e) {
 		return false;
 	}
+
+    @Override
+    public boolean onFling(final MotionEvent e1, final MotionEvent e2, final float velocityX, final float velocityY) {
+        return true;
+    }
 }

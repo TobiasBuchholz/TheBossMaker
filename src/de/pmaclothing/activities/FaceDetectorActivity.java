@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.view.ViewPager;
 import android.view.*;
 import android.view.animation.Animation;
@@ -20,10 +21,10 @@ import de.pmaclothing.view.BossFragmentPagerAdapter;
 import de.pmaclothing.view.FaceAdjustmentBar;
 import de.pmaclothing.view.WrappingSlidingDrawer;
 
-public class FaceDetectorActivity extends CustomActionBarActivity implements ViewPager.OnPageChangeListener {
-    public static final String      INTENT_EXTRA_FROM_CAMERA        = "de.pmaclothing.facedetector.fromCamera";
-
+public class FaceDetectorActivity extends CustomActionBarActivity {
     private static final String     LOG_TAG                         = FaceDetectorActivity.class.getSimpleName();
+
+    public static final String      INTENT_EXTRA_FROM_CAMERA        = "de.pmaclothing.facedetector.fromCamera";
 
 	private static final int        REQUEST_CODE_CHOOSE_BACKGROUND  = 100;
 
@@ -42,19 +43,15 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 	private Animation               mAnimationOverflowOut;
 
     private ViewPager               mViewPager;
-    private ProgressDialog          mProgressDialog;
     private BossFragmentPagerAdapter        mFragmentPagerAdapter;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_face_detector);
-		mLastSeekBarButton = (Button) findViewById(R.id.button_mode_brigthness);
-        mLastSeekBarButton.setSelected(true);
-
         useHardwareAcceleration();
 
-        initProgressDialog();
+        initLastSeekBarButton();
         initViewPager();
         initSlidingDrawer();
 		initFaceAdjustmentBar();
@@ -62,9 +59,15 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 		initAnimations();
 	}
 
-    private void initProgressDialog() {
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setMessage(getString(R.string.please_wait));
+    private void useHardwareAcceleration() {
+        if (Build.VERSION.SDK_INT > 10) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+        }
+    }
+
+    private void initLastSeekBarButton() {
+        mLastSeekBarButton = (Button) findViewById(R.id.button_mode_brigthness);
+        mLastSeekBarButton.setSelected(true);
     }
 
     private void initViewPager() {
@@ -72,7 +75,6 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
         mFragmentPagerAdapter = new BossFragmentPagerAdapter(getSupportFragmentManager(), this);
         mFragmentPagerAdapter.setGestureDetector(new GestureDetector(this, new ImageViewGestureListener()));
         mViewPager.setAdapter(mFragmentPagerAdapter);
-        mViewPager.setOnPageChangeListener(this);
     }
 
     @Override
@@ -103,7 +105,7 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 	            finish();
 	            break;
 	        case R.id.menu_overflow:
-			toggleOverflow();
+			    toggleOverflow();
 	            break;
 	    }
 	    return super.onOptionsItemSelected(item);
@@ -132,13 +134,7 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 		toggleButtons((Button) view, FaceAdjustmentBar.MODE_SATURATION);
 	}
 	
-    private void useHardwareAcceleration() {
-        if (Build.VERSION.SDK_INT > 10) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
-        }
-    }
-
-    public FaceAdjustmentBar getFaceAdjustemntBar() {
+    public FaceAdjustmentBar getFaceAdjustmentBar() {
         return mFaceAdjustmentBar;
     }
 
@@ -250,20 +246,4 @@ public class FaceDetectorActivity extends CustomActionBarActivity implements Vie
 		Intent intent = new Intent(FaceDetectorActivity.this, ChooseBackgroundActivity.class);
 		startActivityForResult(intent, REQUEST_CODE_CHOOSE_BACKGROUND);
 	}
-
-    @Override
-    public void onPageScrolled(final int position, final float positionOffset, final int positionOffsetPixels) {
-    }
-
-    @Override
-    public void onPageSelected(final int position) {
-        mProgressDialog.show();
-    }
-
-    @Override
-    public void onPageScrollStateChanged(final int state) {}
-
-    public void dismissProgressDialog() {
-        mProgressDialog.dismiss();
-    }
 }

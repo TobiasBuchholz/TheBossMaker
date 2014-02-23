@@ -9,5 +9,4 @@ import android.graphics.Bitmap;
 public interface OnBitmapTaskListener {
     public void onTaskFinishSuccess(final Bitmap bitmap);
     public void onTaskFinishFail();
-    public void onTaskError();
 }

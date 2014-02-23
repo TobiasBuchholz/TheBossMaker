@@ -15,6 +15,8 @@ import android.os.Handler;
 import android.util.Log;
 import de.pmaclothing.facedetect.R;
 import de.pmaclothing.utils.Constants;
+import de.pmaclothing.utils.FileHelper;
+import de.pmaclothing.utils.Utils;
 import de.pmaclothing.view.BossFragmentPagerAdapter;
 
 public class SplashScreenActivity extends Activity {
@@ -25,48 +27,69 @@ public class SplashScreenActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_splash_screen);
 		
-		prepareBackgroundGridImages();
-		
-		new Handler().postDelayed(new Runnable() {
+		prepareBackgroundGridImagesAsync();
+        deleteTempFace();
+        launchMainActivityDelayed();
+    }
+
+    private void prepareBackgroundGridImagesAsync() {
+        Utils.executeBackgroundTask(new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                prepareBackgroundGridImages();
+                return null;
+            }
+        });
+    }
+
+    private void prepareBackgroundGridImages() {
+        final String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS;
+
+        final File thumbsDir = new File(path);
+        if(!thumbsDir.isDirectory()) {
+            thumbsDir.mkdirs();
+        }
+
+        final File[] files = thumbsDir.listFiles();
+        if(files != null && files.length < BossFragmentPagerAdapter.mBackgroundIds.length) {
+            for(int resId : BossFragmentPagerAdapter.mBackgroundIds) {
+                createBackgroundThumbnail(path, resId);
+            }
+        }
+    }
+
+    private void createBackgroundThumbnail(final String path, final int resId) {
+        final Options options = new Options();
+        options.inSampleSize = 4;
+        final Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId, options);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(path + resId + Constants.SUFFIX_JPEG);
+            bitmap.compress(CompressFormat.JPEG, 100, fos);
+            fos.flush();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, ":: createBackgroundThumbnail ::", e);
+        } finally {
+            Utils.closeOutputStream(fos);
+        }
+    }
+
+    private void deleteTempFace() {
+        FileHelper.deleteFile(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG);
+    }
+
+    private void launchMainActivityDelayed() {
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-            	SplashScreenActivity.this.finish();
-            	SplashScreenActivity.this.startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
+                launchMainActivity();
             }
         }, 3000);
-	}
+    }
 
-	private void prepareBackgroundGridImages() {
-		new AsyncTask<Void, Void, Void> (){
-
-			@Override
-			protected Void doInBackground(Void... params) {
-				final String path = Constants.PMA_BOSSES_FILE_PATH + Constants.FILE_PATH_THUMBS;
-				
-				final File thumbsDir = new File(path);
-				if(!thumbsDir.isDirectory()) {
-					thumbsDir.mkdirs();
-				}
-				
-				final File[] files = thumbsDir.listFiles();
-				if(files != null && files.length < BossFragmentPagerAdapter.mBackgroundIds.length) {
-					for(int resId : BossFragmentPagerAdapter.mBackgroundIds) {
-						Options options = new Options();
-				        options.inSampleSize = 4;
-				        final Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId, options);
-						
-						try {
-							final FileOutputStream fos = new FileOutputStream(path + resId + Constants.SUFFIX_JPEG);
-							bitmap.compress(CompressFormat.JPEG, 100, fos);
-							fos.flush();
-							fos.close();
-						} catch (Exception e) {
-							Log.e(LOG_TAG, e.getMessage() + e);
-						}
-					}
-				}
-				return null;
-			}
-		}.execute();
-	}
+    private void launchMainActivity() {
+        finish();
+        startActivity(new Intent(this, MainActivity.class));
+    }
 }

@@ -16,6 +16,8 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.MotionEvent;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
@@ -48,13 +50,7 @@ public class ImageZoomView extends ImageView {
     private float                  mTranslateY       = Float.MAX_VALUE;
     private float                  mOldDist;
     private final PointF           mMidPoint         = new PointF();
-    
-    private boolean                mZoomFinishedFlag = true;
-    
-    private float                  mOldScale         = -1f;
-    private boolean                mIsOldScale       = false;
-    private float                  mOldMaxScale;
-    
+
     public enum Mode {
         ZOOM, DRAG, NONE
     }
@@ -108,7 +104,6 @@ public class ImageZoomView extends ImageView {
     
     @Override
     public void setImageBitmap(final Bitmap bitmap) {
-        mIsOldScale = true;
         float[] tempValues = new float[mMatrixValues.length];
         mMatrix.getValues(tempValues);
 
@@ -133,50 +128,20 @@ public class ImageZoomView extends ImageView {
         td.startTransition(500);
     }
     
-    /**
-     * 
-     * @param x
-     * @param y
-     */
     public void setPosition(final int x, final int y) {
     	LayoutParams params = new RelativeLayout.LayoutParams(getLayoutParams());
 		params.setMargins(x, y, 0, 0);
 		setLayoutParams(params);
     }
 
-    /**
-     *
-     */
     public void setPosition(final Point position) {
-        LayoutParams params = new RelativeLayout.LayoutParams(getLayoutParams());
-        params.setMargins(position.x, position.y, 0, 0);
-        setLayoutParams(params);
+        setPosition(position.x, position.y);
     }
 
-    /**
-     * @param degrees The degrees to rotate.
-     */
     public void rotate(final float degrees, final int pivotX, final int pivotY) {
         mMatrix.getValues(mMatrixValues);
         mMatrix.preRotate(degrees, pivotX, pivotY);
         setImageMatrix(mMatrix);
-    }
-    
-    private void resetScale() {
-        mScale = Math.min((float) getWidth() / mImageBounds.right, (float) getHeight() / mImageBounds.bottom);
-        mScaleMin = mScale;
-        mScaleMax = (mScale / MAX_SCALE) * 100f;
-        if (mOldScale != -1f && mIsOldScale) {
-            mIsOldScale = false;
-            mScale = (mOldScale / mOldMaxScale) * mScaleMax;
-        }
-        mMatrix.setScale(mScale, mScale);
-        if (mTranslateX != Float.MAX_VALUE && mTranslateY != Float.MIN_VALUE) {
-            mMatrix.getValues(mMatrixValues);
-            mMatrixValues[Matrix.MTRANS_X] = mTranslateX;
-            mMatrixValues[Matrix.MTRANS_Y] = mTranslateY;
-            mMatrix.setValues(mMatrixValues);
-        }
     }
     
     @Override
@@ -346,5 +311,10 @@ public class ImageZoomView extends ImageView {
             final float y = event.getY(0) + event.getY(1);
             point.set(x / 2, y / 2);
         }
+    }
+
+    public void startRotateAnimation() {
+        final Animation animation = AnimationUtils.loadAnimation(getContext(), R.anim.rotate_animation);
+        startAnimation(animation);
     }
 }

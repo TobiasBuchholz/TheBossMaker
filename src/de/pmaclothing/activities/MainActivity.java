@@ -46,26 +46,32 @@ public class MainActivity extends CustomActionBarActivity {
 	}
 	
 	public void onClickTakePictureButton(View view) {
-		String filepath = Constants.PMA_BOSSES_FILE_PATH;
-		if(FileHelper.exists(filepath) != FileHelper.IS_DIRECTORY) {
-			new File(filepath).mkdir();
-		}
-		
-		Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-		intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(filepath, Constants.ORIGINAL_JPG)));
-        startActivityForResult(intent, TAKE_PICTURE_CODE);
+		final String filePath = Constants.PMA_BOSSES_FILE_PATH;
+        createDirIfNotExists(filePath);
+        launchCamera(filePath);
 	}
-	
-	public void onClickChoosePictureButton(View view) {
-		Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-		startActivityForResult(i, CHOOSE_PICTURE_CODE);
+
+    private void createDirIfNotExists(final String filePath) {
+        if(FileHelper.exists(filePath) != FileHelper.IS_DIRECTORY) {
+            new File(filePath).mkdir();
+        }
+    }
+
+    private void launchCamera(final String filePath) {
+        final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(filePath, Constants.ORIGINAL_JPG)));
+        startActivityForResult(intent, TAKE_PICTURE_CODE);
+    }
+
+    public void onClickChoosePictureButton(View view) {
+        final Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+		startActivityForResult(intent, CHOOSE_PICTURE_CODE);
 	}
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
+        final MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
-
         return super.onCreateOptionsMenu(menu);
     }
 

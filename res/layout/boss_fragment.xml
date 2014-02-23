@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
     <de.pmaclothing.view.ImageZoomView
-            android:id="@+id/image_view_face"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/shit"
-            android:scaleType="matrix"
-            android:adjustViewBounds="true"
-            android:background="#000000"/>
+        android:id="@+id/image_view_progress_circle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/seekbar_thumb_normal"/>
+    <de.pmaclothing.view.ImageZoomView
+        android:id="@+id/image_view_face"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="matrix"
+        android:adjustViewBounds="true"/>
     <ImageView
             android:id="@+id/image_view_background"
             android:layout_width="wrap_content"

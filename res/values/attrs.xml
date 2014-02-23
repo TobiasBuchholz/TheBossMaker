@@ -27,5 +27,7 @@
         <attr name="maskDrawable" format="reference" />
         <attr name="borderDrawable" format="reference" />
     </declare-styleable>
-
+    <declare-styleable name="IconView">
+        <attr name="icon" format="string"/>
+    </declare-styleable>
 </resources>
