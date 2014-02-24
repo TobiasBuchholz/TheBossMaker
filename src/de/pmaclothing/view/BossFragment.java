@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.*;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
@@ -56,19 +55,6 @@ public class BossFragment extends Fragment {
         fragment.mResourceId = BossFragmentPagerAdapter.mBackgroundIds[backgroundNumber];
         fragment.mBackgroundNumber = backgroundNumber;
         return fragment;
-    }
-
-    public void applyBackgroundChange(int backgroundPos) {
-        mBackgroundNumber = backgroundPos;
-        mBitmapBackground = BitmapFactory.decodeResource(getResources(), BossFragmentPagerAdapter.mBackgroundIds[mBackgroundNumber]);
-        mImageViewBackground.setImageBitmap(mBitmapBackground);
-        mImageViewFace.setPosition(mFacePosition);
-        mImageViewProgress.setPosition(mFacePosition.x + mProgressPadding, mFacePosition.y + mProgressPadding);
-        mImageViewFace.centerImage();
-    }
-
-    public void rotateFaceImage(final float degrees) {
-        mImageViewFace.rotate(degrees, mBitmapFace.getWidth() / 2, mBitmapFace.getHeight() / 2);
     }
 
     @Override
@@ -162,6 +148,10 @@ public class BossFragment extends Fragment {
         return !tempImageExists() && mBackgroundNumber == 0;
     }
 
+    private boolean tempImageExists() {
+        return FileHelper.exists(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG) == FileHelper.IS_FILE;
+    }
+
     private void startFaceDetectorTask() {
         final float scaleFactor = (float) mDisplayMetrics.heightPixels / (float) mBitmapBackground.getHeight();
         final int faceSpace = (int) (scaleFactor * FACE_SPACE * mDisplayMetrics.density);
@@ -190,10 +180,6 @@ public class BossFragment extends Fragment {
         };
     }
 
-    private boolean tempImageExists() {
-        return FileHelper.exists(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG) == FileHelper.IS_FILE;
-    }
-
     @Override
     public void setUserVisibleHint(final boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
@@ -206,12 +192,6 @@ public class BossFragment extends Fragment {
             if(mBitmapFace != null) {
                 updatePixelValues();
             }
-        }
-    }
-
-    private void showProgressDialog() {
-        if(mProgressDialog != null && !mProgressDialog.isShowing()) {
-            mProgressDialog.show();
         }
     }
 
@@ -274,8 +254,8 @@ public class BossFragment extends Fragment {
     }
 
     private Bitmap mergeBitmaps() {
-        Bitmap mergedBitmap = Bitmap.createBitmap(mBitmapBackground.getWidth(), mBitmapBackground.getHeight(), Bitmap.Config.ARGB_8888);
-        Matrix matrix = new Matrix();
+        final Bitmap mergedBitmap = Bitmap.createBitmap(mBitmapBackground.getWidth(), mBitmapBackground.getHeight(), Bitmap.Config.ARGB_8888);
+        final Matrix matrix = new Matrix();
         float[] matrixValues = new float[9];
         float scaleFactor = FACE_SPACE * mDisplayMetrics.density / (float) mBitmapFace.getWidth();
 
@@ -288,7 +268,7 @@ public class BossFragment extends Fragment {
         matrixValues[Matrix.MSCALE_Y] = scaleFactor;
         matrix.setValues(matrixValues);
 
-        Canvas canvas = new Canvas(mergedBitmap);
+        final Canvas canvas = new Canvas(mergedBitmap);
         canvas.drawBitmap(mBitmapBackground, 0f, 0f, null);
         canvas.drawBitmap(mBitmapFace, matrix, null);
         return mergedBitmap;
@@ -299,6 +279,12 @@ public class BossFragment extends Fragment {
         Utils.executeBackgroundTask(createBitmapSharingTask(), mergeBitmaps());
     }
 
+    private void showProgressDialog() {
+        if(mProgressDialog != null && !mProgressDialog.isShowing()) {
+            mProgressDialog.show();
+        }
+    }
+
     private BitmapSharingTask createBitmapSharingTask() {
         return new BitmapSharingTask(new BitmapSharingTask.Callback() {
                 @Override
@@ -307,5 +293,18 @@ public class BossFragment extends Fragment {
                     mProgressDialog.dismiss();
                 }
             });
+    }
+
+    public void applyBackgroundChange(int backgroundPos) {
+        mBackgroundNumber = backgroundPos;
+        mBitmapBackground = BitmapFactory.decodeResource(getResources(), BossFragmentPagerAdapter.mBackgroundIds[mBackgroundNumber]);
+        mImageViewBackground.setImageBitmap(mBitmapBackground);
+        mImageViewFace.setPosition(mFacePosition);
+        mImageViewProgress.setPosition(mFacePosition.x + mProgressPadding, mFacePosition.y + mProgressPadding);
+        mImageViewFace.centerImage();
+    }
+
+    public void rotateFaceImage(final float degrees) {
+        mImageViewFace.rotate(degrees, mBitmapFace.getWidth() / 2, mBitmapFace.getHeight() / 2);
     }
 }
