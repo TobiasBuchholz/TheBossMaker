@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.*;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
@@ -252,8 +253,15 @@ public class BossFragment extends Fragment {
         final float saturation = bar.getProgressState(FaceAdjustmentBar.MODE_SATURATION) / 50f;
 
         final BitmapTransformValues transformValues = new BitmapTransformValues(brightness, contrast, saturation);
-        final Bitmap bitmap = mBitmapTransformer.getTransformedBitmap(mBitmapFace, transformValues);
-        mImageViewFace.setImageBitmap(bitmap);
+        mBitmapTransformer.transformedBitmapAsync(mBitmapFace, transformValues, new OnBitmapTaskListener() {
+            @Override
+            public void onTaskFinishSuccess(final Bitmap bitmap) {
+                mImageViewFace.setImageBitmap(bitmap);
+            }
+
+            @Override
+            public void onTaskFinishFail() {}
+        });
     }
 
     public void setGestureDetector(final GestureDetector detector) {

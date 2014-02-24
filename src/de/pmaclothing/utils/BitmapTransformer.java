@@ -1,6 +1,8 @@
 package de.pmaclothing.utils;
 
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import de.pmaclothing.interfaces.OnBitmapTaskListener;
 
 /**
  * User: tobiasbuchholz @ PressMatrix GmbH
@@ -20,7 +22,29 @@ public class BitmapTransformer {
         bitmap.getPixels(mOriginalPixels, 0, width, 0, 0, width, height);
     }
 
-    public Bitmap getTransformedBitmap(final Bitmap srcBitmap, final BitmapTransformValues transformValues) {
+    public void transformedBitmapAsync(final Bitmap srcBitmap, final BitmapTransformValues transformValues, final OnBitmapTaskListener listener) {
+        Utils.executeBackgroundTask(new AsyncTask<Object, Object, Bitmap>() {
+            @Override
+            protected Bitmap doInBackground(final Object... params) {
+                transformedBitmap(srcBitmap, transformValues);
+                return srcBitmap;
+            }
+
+            @Override
+            protected void onPostExecute(final Bitmap bitmap) {
+                super.onPostExecute(bitmap);
+                invokeListener(listener, bitmap);
+            }
+        });
+    }
+
+    private void invokeListener(final OnBitmapTaskListener listener, final Bitmap bitmap) {
+        if(listener != null) {
+            listener.onTaskFinishSuccess(bitmap);
+        }
+    }
+
+    private void transformedBitmap(final Bitmap srcBitmap, final BitmapTransformValues transformValues) {
         final int width = srcBitmap.getWidth();
         final int height = srcBitmap.getHeight();
         int[] pixels = new int[width * height];
@@ -64,6 +88,5 @@ public class BitmapTransformer {
             pixels[pos] = argb;
         }
         srcBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-        return srcBitmap;
     }
 }
