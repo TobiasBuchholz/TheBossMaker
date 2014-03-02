@@ -8,12 +8,14 @@
         android:id="@+id/image_view_progress_circle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="invisible"
         android:src="@drawable/seekbar_thumb_normal"/>
     <de.pmaclothing.view.ImageZoomView
         android:id="@+id/image_view_face"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:scaleType="matrix"
+        android:visibility="invisible"
         android:adjustViewBounds="true"/>
     <ImageView
             android:id="@+id/image_view_background"

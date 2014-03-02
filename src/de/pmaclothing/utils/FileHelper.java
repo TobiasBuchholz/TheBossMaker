@@ -14,6 +14,31 @@ public class FileHelper {
     public static final int     IS_DIRECTORY    = -1;
     public static final int     IS_FILE         = 1;
     public static final int     IS_NOTHING      = 0;
+    public static final String  SUFFIX_NOMEDIA  = ".nomedia";
+
+    public static boolean createNoMediaDirectory(final File directory) {
+        directory.mkdirs();
+        if (!isExisting(directory.getAbsolutePath() + SUFFIX_NOMEDIA)) {
+            tryCreateNoMediaFile(directory.getAbsolutePath());
+        }
+        return directory.exists() && directory.isDirectory();
+    }
+
+    private static void tryCreateNoMediaFile(final String baseDataFolderPath) {
+        try {
+            createNoMediaFile(baseDataFolderPath);
+        } catch (final IOException e) {
+            Log.e(LOG_TAG, "Couldn't create directory " + baseDataFolderPath, e);
+        }
+    }
+
+    private static void createNoMediaFile(final String baseDataFolderPath) throws IOException {
+        if (new File(baseDataFolderPath, SUFFIX_NOMEDIA).createNewFile()) {
+            Log.d(LOG_TAG, ".nomedia-file created");
+        } else {
+            Log.d(LOG_TAG, ".nomedia-file not created");
+        }
+    }
 
     /**
      * Checks whether a file or directory exists.
@@ -70,5 +95,9 @@ public class FileHelper {
             if(fos != null) try { fos.close(); } catch (IOException e) { Log.e(LOG_TAG, ":: saveBitmap ::" + e, e); }
         }
         return success;
+    }
+
+    public static boolean isExisting(final String path) {
+        return exists(path) != IS_NOTHING;
     }
 }

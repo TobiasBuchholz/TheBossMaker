@@ -120,14 +120,6 @@ public class ImageZoomView extends ImageView {
         super.setImageDrawable(drawable);
     }
 
-    public void setImageBitmapWithTransition(final Bitmap bitmap) {
-        final BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-        final Drawable placeHolderDrawable = getResources().getDrawable(R.drawable.shit);
-        final TransitionDrawable td = new TransitionDrawable(new Drawable[] {placeHolderDrawable, bitmapDrawable});
-        setImageDrawable(td);
-        td.startTransition(500);
-    }
-    
     public void setPosition(final int x, final int y) {
     	LayoutParams params = new RelativeLayout.LayoutParams(getLayoutParams());
 		params.setMargins(x, y, 0, 0);

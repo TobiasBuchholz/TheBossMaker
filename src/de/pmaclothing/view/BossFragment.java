@@ -38,7 +38,7 @@ public class BossFragment extends Fragment {
 
     private GestureDetector         mGestureDetector;
     private DisplayMetrics          mDisplayMetrics;
-    private ProgressDialog          mProgressDialog;
+    private CustomProgressDialog    mProgressDialog;
 
     private int                     mResourceId;
     private int                     mBackgroundNumber;
@@ -72,7 +72,7 @@ public class BossFragment extends Fragment {
     }
 
     private void initProgressDialog() {
-        mProgressDialog = new ProgressDialog(mActivity);
+        mProgressDialog = new CustomProgressDialog(mActivity);
         mProgressDialog.setCancelable(true);
         mProgressDialog.setMessage(getString(R.string.please_wait));
     }
@@ -85,15 +85,32 @@ public class BossFragment extends Fragment {
     }
 
     private void initImageViews(final View view) {
-        mBitmapBackground = BitmapFactory.decodeResource(getResources(), mResourceId);
         mImageViewFace = (ImageZoomView) view.findViewById(R.id.image_view_face);
         mImageViewBackground = (ImageView) view.findViewById(R.id.image_view_background);
         mImageViewProgress = (ImageZoomView) view.findViewById(R.id.image_view_progress_circle);
-        mImageViewProgress.startRotateAnimation();
-        mImageViewBackground.setImageBitmap(mBitmapBackground);
+        loadBackgroundImage();
+    }
 
-        setupTouchListener();
-        setupViewTreeObserver();
+    private void loadBackgroundImage() {
+        final BitmapWorkerTask<Integer> task = new BitmapWorkerTask<Integer>(mActivity, mImageViewBackground);
+        final AsyncDrawable asyncDrawable = new AsyncDrawable(getResources(), null, task);
+        mImageViewBackground.setImageDrawable(asyncDrawable);
+        task.setOnBitmapTaskListener(new OnBitmapTaskListener() {
+            @Override
+            public void onTaskFinishSuccess(final Bitmap bitmap) {
+                mBitmapBackground = bitmap;
+                mImageViewBackground.setImageBitmap(mBitmapBackground);
+                mImageViewFace.setVisibility(View.VISIBLE);
+                mImageViewProgress.setVisibility(View.VISIBLE);
+                mImageViewProgress.startRotateAnimation();
+                setupTouchListener();
+                setupViewTreeObserver();
+                handleStartFaceDetectorTask();
+            }
+            @Override
+            public void onTaskFinishFail() {}
+        });
+        Utils.executeBackgroundTask(task, mResourceId);
     }
 
     private void setupTouchListener() {
@@ -112,6 +129,7 @@ public class BossFragment extends Fragment {
             public boolean onPreDraw() {
                 initAndSetFacePosition();
                 return true;
+
             }
         });
     }
@@ -136,9 +154,7 @@ public class BossFragment extends Fragment {
         return new Point(resultX, resultY);
     }
 
-    @Override
-    public void onViewCreated(final View view, final Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    private void handleStartFaceDetectorTask() {
         if(shouldProcessImage()) {
             startFaceDetectorTask();
         }
@@ -196,18 +212,18 @@ public class BossFragment extends Fragment {
     }
 
     private void loadFaceBitmapFromDisk() {
-        loadBitmap(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG, mImageViewFace);
+        loadBitmapWithPath(Constants.PMA_BOSSES_FILE_PATH + Constants.TEMP_FACE_PNG, mImageViewFace);
     }
 
-    public void loadBitmap(final String imagePath, final ImageView imageView) {
-        final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
+    public void loadBitmapWithPath(final String imagePath, final ImageView imageView) {
+        final BitmapWorkerTask<String> task = new BitmapWorkerTask<String>(mActivity, imageView);
         final AsyncDrawable asyncDrawable = new AsyncDrawable(getResources(), null, task);
         imageView.setImageDrawable(asyncDrawable);
         setListenerToBitmapWorkerTask(task);
         Utils.executeBackgroundTask(task, imagePath);
     }
 
-    private void setListenerToBitmapWorkerTask(final BitmapWorkerTask task) {
+    private void setListenerToBitmapWorkerTask(final BitmapWorkerTask<String> task) {
         task.setOnBitmapTaskListener(new OnBitmapTaskListener() {
             @Override
             public void onTaskFinishSuccess(final Bitmap bitmap) {

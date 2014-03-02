@@ -48,7 +48,7 @@ public class SplashScreenActivity extends Activity {
 
         final File thumbsDir = new File(path);
         if(!thumbsDir.isDirectory()) {
-            thumbsDir.mkdirs();
+            FileHelper.createNoMediaDirectory(thumbsDir);
         }
 
         final File[] files = thumbsDir.listFiles();
